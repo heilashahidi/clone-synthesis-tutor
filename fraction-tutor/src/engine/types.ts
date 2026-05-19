@@ -53,11 +53,22 @@ export type Fraction = {
 
 // ── Lesson Types ────────────────────────────────────────────────────
 
-export type LessonCondition = {
-  type: "fraction_equals";
-  barIndex: number;
-  target: Fraction;
-};
+export type LessonCondition =
+  | { type: "fraction_equals"; barIndex: number; target: Fraction }
+  | {
+      type: "action_performed";
+      action:
+        | "ADD_BAR"
+        | "SHADE"
+        | "SPLIT"
+        | "MOVE_SEGMENT"
+        | "REMOVE_SEGMENT";
+    };
+
+export type TutorialActionTrigger = Extract<
+  LessonCondition,
+  { type: "action_performed" }
+>["action"];
 
 export type LessonOption = {
   label: string;

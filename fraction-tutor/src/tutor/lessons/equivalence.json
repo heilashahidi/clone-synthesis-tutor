@@ -1,12 +1,19 @@
 {
   "id": "fraction-equivalence-1",
   "title": "Same size, different pieces",
-  "startNode": "intro_1",
+  "startNode": "lesson_intro",
   "nodes": {
+    "lesson_intro": {
+      "id": "lesson_intro",
+      "type": "message",
+      "message": "Today you'll learn how some fractions look different but actually mean the same thing — like 1/2 and 2/4. Pretty cool, right? First, let me show you a few moves so we can play together.",
+      "next": "intro_1"
+    },
+
     "intro_1": {
       "id": "intro_1",
       "type": "message",
-      "message": "Hi there! Today we're going to play with fraction bars. See that bar up top? It's one whole piece right now.",
+      "message": "Look at this bar — it's one whole piece, all by itself.",
       "next": "intro_tap_wait",
       "setup": {
         "bars": [

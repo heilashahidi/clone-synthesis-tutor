@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useReducer, useState } from "react";
+import { useCallback, useReducer, useState } from "react";
 import {
   fractionReducer,
   initialState,
@@ -8,75 +8,85 @@ import { useTutorVoice } from "../voice/useTutorVoice";
 import { FractionWorkspace } from "./FractionWorkspace";
 import { TutorPanel } from "./TutorPanel";
 import { ProgressIndicator } from "./ProgressIndicator";
-import {
-  tutorialMessage,
-  useTutorialProgress,
-} from "./useTutorialProgress";
 import type { BarColor, Lesson } from "../engine/types";
 import styles from "../styles/LessonShell.module.css";
 
 type LessonShellProps = {
   lesson: Lesson;
+  totalSteps?: number;
+  getStepForNode?: (nodeId: string) => number;
 };
 
 const BAR_COLOR_CYCLE: BarColor[] = ["teal", "blue", "coral", "purple"];
 
-export function LessonShell({ lesson }: LessonShellProps) {
+export function LessonShell({
+  lesson,
+  totalSteps,
+  getStepForNode,
+}: LessonShellProps) {
   const [manipState, dispatch] = useReducer(fractionReducer, initialState);
 
-  // The chat itself runs the walkthrough; the AI lesson is paused
-  // until the tutorial finishes (or the student skips it).
   const {
-    step: tutorialStep,
-    advance: advanceTutorial,
-    skip: skipTutorial,
-  } = useTutorialProgress();
+    state: lessonState,
+    currentNode,
+    advance,
+    selectOption,
+    notifyAction,
+    jumpTo,
+  } = useLessonRunner({
+    lesson,
+    bars: manipState.bars,
+    dispatch,
+    totalSteps,
+    getStepForNode,
+  });
 
-  const lessonActive = tutorialStep === null;
-
-  const { state: lessonState, currentNode, advance, selectOption } =
-    useLessonRunner({
-      lesson,
-      bars: manipState.bars,
-      dispatch,
-      active: lessonActive,
-    });
-
-  // The tutor chat shows either the tutorial step (as if Lila were
-  // speaking it) or the live lesson messages.
-  const displayMessages = useMemo(() => {
-    if (tutorialStep) return [tutorialMessage(tutorialStep)];
-    return lessonState.messages;
-  }, [tutorialStep, lessonState.messages]);
-
-  // Speak whatever the chat is showing.
+  // Speak each new tutor line through ElevenLabs (no-op without API key).
   const [muted, setMuted] = useState(false);
-  useTutorVoice(displayMessages, muted);
+  useTutorVoice(lessonState.messages, muted);
+
+  // While we're on a walkthrough node (a wait_for_action whose condition
+  // is action_performed), only the expected gesture should do anything.
+  // After the walkthrough, expectedAction is null and every gesture
+  // works normally.
+  const expectedAction =
+    currentNode?.type === "wait_for_action" &&
+    currentNode.condition?.type === "action_performed"
+      ? currentNode.condition.action
+      : null;
+  const isLocked = (action: string) =>
+    expectedAction !== null && expectedAction !== action;
 
   // ── Gesture handlers ────────────────────────────────────────────────
 
   const handleSegmentTap = useCallback(
     (barId: string, segmentId: string) => {
+      if (isLocked("SHADE")) return;
       dispatch({ type: "SHADE", barId, segmentId });
-      advanceTutorial("SHADE");
+      notifyAction("SHADE");
     },
-    [advanceTutorial]
+    [expectedAction, notifyAction]
   );
 
   const handleSegmentDoubleTap = useCallback(
     (barId: string, segmentId: string) => {
+      if (isLocked("SPLIT")) return;
       dispatch({ type: "SPLIT", barId, segmentId });
-      advanceTutorial("SPLIT");
+      notifyAction("SPLIT");
     },
-    [advanceTutorial]
+    [expectedAction, notifyAction]
   );
 
   const handleSegmentLongPress = useCallback(
     (barId: string, segmentId: string) => {
+      if (isLocked("REMOVE_SEGMENT")) return;
+      // Don't let a long-press wipe out the last piece of a bar.
+      const bar = manipState.bars.find((b) => b.id === barId);
+      if (!bar || bar.segments.length <= 1) return;
       dispatch({ type: "REMOVE_SEGMENT", barId, segmentId });
-      advanceTutorial("REMOVE_SEGMENT");
+      notifyAction("REMOVE_SEGMENT");
     },
-    [advanceTutorial]
+    [expectedAction, manipState.bars, notifyAction]
   );
 
   const handleSegmentDragEnd = useCallback(
@@ -87,7 +97,10 @@ export function LessonShell({ lesson }: LessonShellProps) {
       y: number,
       dropTargetId: string | null
     ) => {
-      if (dropTargetId) {
+      if (isLocked("MOVE_SEGMENT")) return;
+      // Combine-on-drop only outside the walkthrough; during the drag
+      // step we want a drop to register as movement, not combine.
+      if (dropTargetId && expectedAction === null) {
         const sourceBar = manipState.bars.find((b) => b.id === barId);
         const sourceIdx =
           sourceBar?.segments.findIndex((s) => s.id === segmentId) ?? -1;
@@ -113,17 +126,26 @@ export function LessonShell({ lesson }: LessonShellProps) {
         }
       }
       dispatch({ type: "MOVE_SEGMENT", barId, segmentId, x, y });
-      if (x !== 0 || y !== 0) advanceTutorial("MOVE_SEGMENT");
+      if (x !== 0 || y !== 0) notifyAction("MOVE_SEGMENT");
     },
-    [manipState.bars, advanceTutorial]
+    [expectedAction, manipState.bars, notifyAction]
   );
 
   const handleEmptyDoubleTap = useCallback(() => {
+    if (isLocked("ADD_BAR")) return;
     const color =
       BAR_COLOR_CYCLE[manipState.bars.length % BAR_COLOR_CYCLE.length];
     dispatch({ type: "ADD_BAR", color });
-    advanceTutorial("ADD_BAR");
-  }, [manipState.bars.length, advanceTutorial]);
+    notifyAction("ADD_BAR");
+  }, [expectedAction, manipState.bars.length, notifyAction]);
+
+  // While we're on a walkthrough_* node, offer a Skip link in the chat
+  // that jumps to the start of the real lesson.
+  const inWalkthrough =
+    currentNode?.id.startsWith("walkthrough_") ?? false;
+  const handleSkipWalkthrough = useCallback(() => {
+    jumpTo("intro_1");
+  }, [jumpTo]);
 
   return (
     <div className={styles.shell}>
@@ -149,11 +171,11 @@ export function LessonShell({ lesson }: LessonShellProps) {
         </div>
 
         <TutorPanel
-          messages={displayMessages}
-          currentNode={lessonActive ? currentNode : undefined}
+          messages={lessonState.messages}
+          currentNode={currentNode}
           onOptionSelect={selectOption}
           onAdvance={advance}
-          onSkipTutorial={lessonActive ? undefined : skipTutorial}
+          onSkipTutorial={inWalkthrough ? handleSkipWalkthrough : undefined}
         />
       </div>
     </div>

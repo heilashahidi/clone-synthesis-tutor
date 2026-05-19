@@ -12,6 +12,44 @@ const VOICE_ID =
 // need the highest-quality multilingual one.
 const MODEL = "eleven_flash_v2_5";
 
+const NUMBER_WORDS = [
+  "zero",
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+  "ten",
+  "eleven",
+  "twelve",
+  "thirteen",
+  "fourteen",
+  "fifteen",
+  "sixteen",
+  "seventeen",
+  "eighteen",
+  "nineteen",
+] as const;
+
+function numberWord(n: number): string {
+  return NUMBER_WORDS[n] ?? String(n);
+}
+
+/**
+ * Rewrite "X/Y" fraction notation into the spoken phrase "X over Y"
+ * (e.g., "1/2" -> "one over two") so TTS reads fractions consistently
+ * regardless of the model's default pronunciation.
+ */
+export function toSpokenFractions(text: string): string {
+  return text.replace(/\b(\d+)\/(\d+)\b/g, (_, n: string, d: string) => {
+    return `${numberWord(parseInt(n, 10))} over ${numberWord(parseInt(d, 10))}`;
+  });
+}
+
 let currentAudio: HTMLAudioElement | null = null;
 let currentObjectUrl: string | null = null;
 let abortController: AbortController | null = null;
@@ -55,7 +93,7 @@ export async function speak(text: string): Promise<void> {
           accept: "audio/mpeg",
         },
         body: JSON.stringify({
-          text,
+          text: toSpokenFractions(text),
           model_id: MODEL,
           voice_settings: {
             stability: 0.5,

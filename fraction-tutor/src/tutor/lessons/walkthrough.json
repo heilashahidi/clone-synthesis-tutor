@@ -1,0 +1,41 @@
+{
+  "startNode": "walkthrough_add_bar",
+  "exitNodeId": "walkthrough_remove",
+  "nodes": {
+    "walkthrough_add_bar": {
+      "id": "walkthrough_add_bar",
+      "type": "wait_for_action",
+      "message": "Tap any empty space twice and a new bar will pop up.",
+      "condition": { "type": "action_performed", "action": "ADD_BAR" },
+      "onMet": "walkthrough_color"
+    },
+    "walkthrough_color": {
+      "id": "walkthrough_color",
+      "type": "wait_for_action",
+      "message": "Nice work! Now try tapping a piece to color it in.",
+      "condition": { "type": "action_performed", "action": "SHADE" },
+      "onMet": "walkthrough_split"
+    },
+    "walkthrough_split": {
+      "id": "walkthrough_split",
+      "type": "wait_for_action",
+      "message": "Great. Now tap a piece two times quickly and watch it split in half.",
+      "condition": { "type": "action_performed", "action": "SPLIT" },
+      "onMet": "walkthrough_drag"
+    },
+    "walkthrough_drag": {
+      "id": "walkthrough_drag",
+      "type": "wait_for_action",
+      "message": "You can also move pieces around. Drag any piece across the screen.",
+      "condition": { "type": "action_performed", "action": "MOVE_SEGMENT" },
+      "onMet": "walkthrough_remove"
+    },
+    "walkthrough_remove": {
+      "id": "walkthrough_remove",
+      "type": "wait_for_action",
+      "message": "Last one — hold a piece for a moment to take it away. After this we'll start exploring fractions!",
+      "condition": { "type": "action_performed", "action": "REMOVE_SEGMENT" },
+      "onMet": "__exit__"
+    }
+  }
+}

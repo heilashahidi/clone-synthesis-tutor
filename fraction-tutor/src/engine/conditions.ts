@@ -46,6 +46,8 @@ export function fractionToString(f: Fraction): string {
 
 /**
  * Check if a lesson condition is met against the current bars.
+ * Only `fraction_equals` is evaluable against state; `action_performed`
+ * is event-driven and handled separately by the lesson runner.
  */
 export function checkCondition(
   condition: LessonCondition,
