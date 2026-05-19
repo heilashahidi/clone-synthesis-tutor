@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import { LayoutGroup } from "framer-motion";
 import { Segment } from "./Segment";
 import { barToFraction, fractionToString } from "../engine/conditions";
@@ -7,8 +8,10 @@ import styles from "../styles/FractionBar.module.css";
 type FractionBarProps = {
   bar: FractionBarType;
   selectedSegmentId: string | null;
+  dragBoundsRef: RefObject<HTMLDivElement | null>;
   onSegmentTap: (barId: string, segmentId: string) => void;
-  onSegmentSmash: (barId: string, segmentId: string) => void;
+  onSegmentDoubleTap: (barId: string, segmentId: string) => void;
+  onSegmentLongPress: (barId: string, segmentId: string) => void;
   onSegmentDragEnd: (
     barId: string,
     segmentId: string,
@@ -21,8 +24,10 @@ type FractionBarProps = {
 export function FractionBar({
   bar,
   selectedSegmentId,
+  dragBoundsRef,
   onSegmentTap,
-  onSegmentSmash,
+  onSegmentDoubleTap,
+  onSegmentLongPress,
   onSegmentDragEnd,
 }: FractionBarProps) {
   const fraction = barToFraction(bar);
@@ -43,8 +48,10 @@ export function FractionBar({
               isSelected={selectedSegmentId === seg.id}
               x={seg.x ?? 0}
               y={seg.y ?? 0}
+              dragBoundsRef={dragBoundsRef}
               onTap={() => onSegmentTap(bar.id, seg.id)}
-              onSmash={() => onSegmentSmash(bar.id, seg.id)}
+              onDoubleTap={() => onSegmentDoubleTap(bar.id, seg.id)}
+              onLongPress={() => onSegmentLongPress(bar.id, seg.id)}
               onDragEnd={(x, y, dropTargetId) =>
                 onSegmentDragEnd(bar.id, seg.id, x, y, dropTargetId)
               }

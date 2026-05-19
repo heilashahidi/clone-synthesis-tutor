@@ -1,53 +1,84 @@
-import { useReducer, useCallback } from "react";
-import { fractionReducer, initialState, createBar, resetCounters } from "../engine/fractionReducer";
+import { useCallback, useMemo, useReducer, useState } from "react";
+import {
+  fractionReducer,
+  initialState,
+} from "../engine/fractionReducer";
 import { useLessonRunner } from "../tutor/lessonRunner";
+import { useTutorVoice } from "../voice/useTutorVoice";
 import { FractionWorkspace } from "./FractionWorkspace";
-import { ActionBar } from "./ActionBar";
 import { TutorPanel } from "./TutorPanel";
 import { ProgressIndicator } from "./ProgressIndicator";
-import type { Lesson } from "../engine/types";
+import {
+  tutorialMessage,
+  useTutorialProgress,
+} from "./useTutorialProgress";
+import type { BarColor, Lesson } from "../engine/types";
 import styles from "../styles/LessonShell.module.css";
 
 type LessonShellProps = {
   lesson: Lesson;
 };
 
+const BAR_COLOR_CYCLE: BarColor[] = ["teal", "blue", "coral", "purple"];
+
 export function LessonShell({ lesson }: LessonShellProps) {
   const [manipState, dispatch] = useReducer(fractionReducer, initialState);
+
+  // The chat itself runs the walkthrough; the AI lesson is paused
+  // until the tutorial finishes (or the student skips it).
+  const {
+    step: tutorialStep,
+    advance: advanceTutorial,
+    skip: skipTutorial,
+  } = useTutorialProgress();
+
+  const lessonActive = tutorialStep === null;
 
   const { state: lessonState, currentNode, advance, selectOption } =
     useLessonRunner({
       lesson,
       bars: manipState.bars,
       dispatch,
+      active: lessonActive,
     });
 
-  // Tap a segment: select/deselect or shade depending on context
+  // The tutor chat shows either the tutorial step (as if Lila were
+  // speaking it) or the live lesson messages.
+  const displayMessages = useMemo(() => {
+    if (tutorialStep) return [tutorialMessage(tutorialStep)];
+    return lessonState.messages;
+  }, [tutorialStep, lessonState.messages]);
+
+  // Speak whatever the chat is showing.
+  const [muted, setMuted] = useState(false);
+  useTutorVoice(displayMessages, muted);
+
+  // ── Gesture handlers ────────────────────────────────────────────────
+
   const handleSegmentTap = useCallback(
     (barId: string, segmentId: string) => {
-      if (
-        manipState.selectedBarId === barId &&
-        manipState.selectedSegmentId === segmentId
-      ) {
-        dispatch({ type: "SHADE", barId, segmentId });
-      } else {
-        dispatch({ type: "SELECT", barId, segmentId });
-      }
+      dispatch({ type: "SHADE", barId, segmentId });
+      advanceTutorial("SHADE");
     },
-    [manipState.selectedBarId, manipState.selectedSegmentId]
+    [advanceTutorial]
   );
 
-  // Long-press a segment: shatter into 4 equal pieces (all snap home)
-  const handleSegmentSmash = useCallback(
+  const handleSegmentDoubleTap = useCallback(
     (barId: string, segmentId: string) => {
-      dispatch({ type: "SHATTER", barId, segmentId, count: 4 });
-      dispatch({ type: "DESELECT" });
+      dispatch({ type: "SPLIT", barId, segmentId });
+      advanceTutorial("SPLIT");
     },
-    []
+    [advanceTutorial]
   );
 
-  // Drag end: if dropped on an adjacent same-bar same-shade neighbor,
-  // combine; otherwise save the new free-floating position.
+  const handleSegmentLongPress = useCallback(
+    (barId: string, segmentId: string) => {
+      dispatch({ type: "REMOVE_SEGMENT", barId, segmentId });
+      advanceTutorial("REMOVE_SEGMENT");
+    },
+    [advanceTutorial]
+  );
+
   const handleSegmentDragEnd = useCallback(
     (
       barId: string,
@@ -82,52 +113,17 @@ export function LessonShell({ lesson }: LessonShellProps) {
         }
       }
       dispatch({ type: "MOVE_SEGMENT", barId, segmentId, x, y });
+      if (x !== 0 || y !== 0) advanceTutorial("MOVE_SEGMENT");
     },
-    [manipState.bars]
+    [manipState.bars, advanceTutorial]
   );
 
-  const handleSplit = useCallback(() => {
-    if (manipState.selectedBarId && manipState.selectedSegmentId) {
-      dispatch({
-        type: "SPLIT",
-        barId: manipState.selectedBarId,
-        segmentId: manipState.selectedSegmentId,
-      });
-      dispatch({ type: "DESELECT" });
-    }
-  }, [manipState.selectedBarId, manipState.selectedSegmentId]);
-
-  const handleCombine = useCallback(() => {
-    if (manipState.selectedBarId && manipState.selectedSegmentId) {
-      dispatch({
-        type: "COMBINE",
-        barId: manipState.selectedBarId,
-        segmentId: manipState.selectedSegmentId,
-      });
-      dispatch({ type: "DESELECT" });
-    }
-  }, [manipState.selectedBarId, manipState.selectedSegmentId]);
-
-  const handleShade = useCallback(() => {
-    if (manipState.selectedBarId && manipState.selectedSegmentId) {
-      dispatch({
-        type: "SHADE",
-        barId: manipState.selectedBarId,
-        segmentId: manipState.selectedSegmentId,
-      });
-    }
-  }, [manipState.selectedBarId, manipState.selectedSegmentId]);
-
-  const handleReset = useCallback(() => {
-    dispatch({ type: "DESELECT" });
-    if (currentNode?.setup) {
-      resetCounters();
-      const newBars = currentNode.setup.bars.map((b) =>
-        createBar(b.segments, b.shaded, b.color)
-      );
-      dispatch({ type: "SET_STATE", bars: newBars });
-    }
-  }, [currentNode]);
+  const handleEmptyDoubleTap = useCallback(() => {
+    const color =
+      BAR_COLOR_CYCLE[manipState.bars.length % BAR_COLOR_CYCLE.length];
+    dispatch({ type: "ADD_BAR", color });
+    advanceTutorial("ADD_BAR");
+  }, [manipState.bars.length, advanceTutorial]);
 
   return (
     <div className={styles.shell}>
@@ -135,6 +131,8 @@ export function LessonShell({ lesson }: LessonShellProps) {
         step={lessonState.step}
         totalSteps={lessonState.totalSteps}
         isComplete={lessonState.isComplete}
+        muted={muted}
+        onToggleMute={() => setMuted((m) => !m)}
       />
 
       <div className={styles.body}>
@@ -143,26 +141,19 @@ export function LessonShell({ lesson }: LessonShellProps) {
             bars={manipState.bars}
             selectedSegmentId={manipState.selectedSegmentId}
             onSegmentTap={handleSegmentTap}
-            onSegmentSmash={handleSegmentSmash}
+            onSegmentDoubleTap={handleSegmentDoubleTap}
+            onSegmentLongPress={handleSegmentLongPress}
             onSegmentDragEnd={handleSegmentDragEnd}
+            onEmptyDoubleTap={handleEmptyDoubleTap}
           />
-
-          {!lessonState.isComplete && (
-            <ActionBar
-              hasSelection={!!manipState.selectedSegmentId}
-              onSplit={handleSplit}
-              onCombine={handleCombine}
-              onShade={handleShade}
-              onReset={handleReset}
-            />
-          )}
         </div>
 
         <TutorPanel
-          messages={lessonState.messages}
-          currentNode={currentNode}
+          messages={displayMessages}
+          currentNode={lessonActive ? currentNode : undefined}
           onOptionSelect={selectOption}
           onAdvance={advance}
+          onSkipTutorial={lessonActive ? undefined : skipTutorial}
         />
       </div>
     </div>

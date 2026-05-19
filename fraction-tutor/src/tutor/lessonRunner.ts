@@ -36,9 +36,18 @@ type UseLessonRunnerOptions = {
   lesson: Lesson;
   bars: FractionBar[];
   dispatch: React.Dispatch<ManipulativeAction>;
+  // When false, the runner pauses: the initial node isn't processed
+  // and wait_for_action conditions aren't checked. Flip to true to
+  // start the lesson (e.g., after the tutorial finishes).
+  active?: boolean;
 };
 
-export function useLessonRunner({ lesson, bars, dispatch }: UseLessonRunnerOptions) {
+export function useLessonRunner({
+  lesson,
+  bars,
+  dispatch,
+  active = true,
+}: UseLessonRunnerOptions) {
   const [state, setState] = useState<LessonRunnerState>(() => ({
     currentNodeId: lesson.startNode,
     messages: [],
@@ -107,17 +116,20 @@ export function useLessonRunner({ lesson, bars, dispatch }: UseLessonRunnerOptio
     [dispatch]
   );
 
-  // Process the initial node on mount
+  // Process the initial node when activated. While `active` is false
+  // (e.g., during the tutorial), the lesson does nothing.
   useEffect(() => {
+    if (!active) return;
     const startNode = lesson.nodes[lesson.startNode];
     if (startNode) {
       processNode(startNode);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [active]);
 
   // Check conditions when bars change (for wait_for_action nodes)
   useEffect(() => {
+    if (!active) return;
     if (!currentNode || currentNode.type !== "wait_for_action") return;
     if (!currentNode.condition || !currentNode.onMet) return;
 
@@ -129,7 +141,7 @@ export function useLessonRunner({ lesson, bars, dispatch }: UseLessonRunnerOptio
         setTimeout(() => processNode(nextNode), 600);
       }
     }
-  }, [bars, currentNode, lesson.nodes, processNode]);
+  }, [active, bars, currentNode, lesson.nodes, processNode]);
 
   // Advance to the next message node (for "continue" taps)
   const advance = useCallback(() => {

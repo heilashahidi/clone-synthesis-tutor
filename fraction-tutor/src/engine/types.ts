@@ -41,7 +41,8 @@ export type ManipulativeAction =
       segmentId: string;
       x: number;
       y: number;
-    };
+    }
+  | { type: "REMOVE_SEGMENT"; barId: string; segmentId: string };
 
 // ── Derived Fraction ────────────────────────────────────────────────
 

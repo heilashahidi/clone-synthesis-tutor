@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   animate,
   motion,
@@ -16,6 +16,7 @@ const COLOR_MAP: Record<BarColor, { shaded: string; text: string }> = {
 };
 
 const LONG_PRESS_MS = 500;
+const DOUBLE_TAP_MS = 280;
 
 type SegmentProps = {
   id: string;
@@ -25,8 +26,10 @@ type SegmentProps = {
   isSelected: boolean;
   x: number;
   y: number;
+  dragBoundsRef: RefObject<HTMLDivElement | null>;
   onTap: () => void;
-  onSmash: () => void;
+  onDoubleTap: () => void;
+  onLongPress: () => void;
   onDragEnd: (x: number, y: number, dropTargetId: string | null) => void;
 };
 
@@ -38,17 +41,17 @@ export function Segment({
   isSelected,
   x,
   y,
+  dragBoundsRef,
   onTap,
-  onSmash,
+  onDoubleTap,
+  onLongPress,
   onDragEnd: onDragEndProp,
 }: SegmentProps) {
   const colors = COLOR_MAP[color];
   const xMotion = useMotionValue(x);
   const yMotion = useMotionValue(y);
 
-  // Spring the segment back to its home slot when the model resets x/y
-  // (e.g. after COMBINE or SHATTER). On a normal MOVE_SEGMENT the
-  // motion value already matches (x, y), so animate is a no-op.
+  // Spring the segment back to its home slot when the model resets x/y.
   useEffect(() => {
     const controls = animate(xMotion, x, {
       type: "spring",
@@ -68,6 +71,7 @@ export function Segment({
 
   const [isHolding, setIsHolding] = useState(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wasLongPress = useRef(false);
 
   const clearLongPress = () => {
@@ -85,13 +89,34 @@ export function Segment({
       wasLongPress.current = true;
       longPressTimer.current = null;
       setIsHolding(false);
-      onSmash();
+      // Cancel any pending single-tap so we don't also fire shade
+      if (tapTimer.current) {
+        clearTimeout(tapTimer.current);
+        tapTimer.current = null;
+      }
+      onLongPress();
     }, LONG_PRESS_MS);
   };
 
   const handleTap = () => {
     clearLongPress();
-    if (!wasLongPress.current) onTap();
+    if (wasLongPress.current) {
+      wasLongPress.current = false;
+      return;
+    }
+
+    if (tapTimer.current) {
+      // Second tap within the window — double tap
+      clearTimeout(tapTimer.current);
+      tapTimer.current = null;
+      onDoubleTap();
+    } else {
+      // First tap — wait briefly to see if a second tap follows
+      tapTimer.current = setTimeout(() => {
+        tapTimer.current = null;
+        onTap();
+      }, DOUBLE_TAP_MS);
+    }
   };
 
   const handleTapCancel = () => {
@@ -100,6 +125,10 @@ export function Segment({
 
   const handleDragStart = () => {
     clearLongPress();
+    if (tapTimer.current) {
+      clearTimeout(tapTimer.current);
+      tapTimer.current = null;
+    }
   };
 
   const handleDragEnd = (_: unknown, info: PanInfo) => {
@@ -110,9 +139,6 @@ export function Segment({
     const newX = xMotion.get();
     const newY = yMotion.get();
 
-    // Find any segment under the drop point (excluding self).
-    // elementsFromPoint returns deep matches so we see through
-    // the dragged element itself.
     const els = document.elementsFromPoint(info.point.x, info.point.y);
     let dropTargetId: string | null = null;
     for (const el of els) {
@@ -126,6 +152,15 @@ export function Segment({
     onDragEndProp(newX, newY, dropTargetId);
   };
 
+  // Cancel any pending tap-timer if the component unmounts mid-tap
+  // (e.g., after a remove).
+  useEffect(() => {
+    return () => {
+      if (tapTimer.current) clearTimeout(tapTimer.current);
+      if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    };
+  }, []);
+
   const isElevated = x !== 0 || y !== 0;
 
   return (
@@ -134,6 +169,8 @@ export function Segment({
       data-segment-id={id}
       drag
       dragMomentum={false}
+      dragConstraints={dragBoundsRef}
+      dragElastic={0.15}
       style={{
         x: xMotion,
         y: yMotion,

@@ -226,6 +226,21 @@ export function fractionReducer(
       };
     }
 
+    case "REMOVE_SEGMENT": {
+      // Remove a single segment; drop the whole bar if its last
+      // segment is being removed.
+      const bars = state.bars
+        .map((bar) => {
+          if (bar.id !== action.barId) return bar;
+          return {
+            ...bar,
+            segments: bar.segments.filter((s) => s.id !== action.segmentId),
+          };
+        })
+        .filter((bar) => bar.segments.length > 0);
+      return { ...state, bars };
+    }
+
     default:
       return state;
   }

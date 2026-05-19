@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import type { TutorMessage, LessonNode } from "../engine/types";
 import styles from "../styles/TutorPanel.module.css";
 
@@ -7,6 +6,9 @@ type TutorPanelProps = {
   currentNode: LessonNode | undefined;
   onOptionSelect: (index: number) => void;
   onAdvance: () => void;
+  // When set, the panel is in tutorial mode and a Skip button is
+  // shown in place of any lesson option/continue buttons.
+  onSkipTutorial?: () => void;
 };
 
 export function TutorPanel({
@@ -14,16 +16,8 @@ export function TutorPanel({
   currentNode,
   onOptionSelect,
   onAdvance,
+  onSkipTutorial,
 }: TutorPanelProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
   const showOptions =
     currentNode &&
     (currentNode.type === "prompt" || currentNode.type === "check") &&
@@ -35,42 +29,56 @@ export function TutorPanel({
     currentNode.type === "message" &&
     currentNode.next;
 
+  // Show only the latest tutor message — no chat history, no student
+  // echoes. The student's "answer" is whichever option button they tap.
+  const latest = [...messages]
+    .reverse()
+    .find((m) => m.sender === "tutor");
+
   return (
     <div className={styles.panel}>
-      <div className={styles.messages} ref={scrollRef}>
-        {messages.map((msg) => (
+      <div className={styles.messages}>
+        {latest && (
           <div
-            key={msg.id}
-            className={`${styles.bubble} ${
-              msg.sender === "student" ? styles.studentBubble : styles.tutorBubble
-            }`}
+            key={latest.id}
+            className={`${styles.bubble} ${styles.tutorBubble}`}
           >
-            {msg.sender === "tutor" && (
-              <div className={styles.avatar}>
-                <span>✦</span>
-              </div>
-            )}
-            <p className={styles.text}>{msg.text}</p>
+            <div className={styles.avatar}>
+              <span>✦</span>
+            </div>
+            <p className={styles.text}>{latest.text}</p>
           </div>
-        ))}
+        )}
       </div>
 
       <div className={styles.actions}>
-        {showOptions &&
-          currentNode.options!.map((opt, i) => (
-            <button
-              key={i}
-              className={styles.optionButton}
-              onClick={() => onOptionSelect(i)}
-            >
-              {opt.label}
-            </button>
-          ))}
-
-        {showContinue && (
-          <button className={styles.continueButton} onClick={onAdvance}>
-            Continue →
+        {onSkipTutorial ? (
+          <button
+            type="button"
+            className={styles.skipLink}
+            onClick={onSkipTutorial}
+          >
+            Skip walkthrough
           </button>
+        ) : (
+          <>
+            {showOptions &&
+              currentNode.options!.map((opt, i) => (
+                <button
+                  key={i}
+                  className={styles.optionButton}
+                  onClick={() => onOptionSelect(i)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+
+            {showContinue && (
+              <button className={styles.continueButton} onClick={onAdvance}>
+                Continue →
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
