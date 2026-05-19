@@ -6,8 +6,6 @@
 //   2. Author a small TS wrapper (e.g., `multiplying-fractions.ts`)
 //      that exports the lesson + its step-counter config.
 //   3. Import below and add a LessonManifest entry to LESSONS.
-//   4. Optionally wrap the lesson in `withWalkthrough(...)` to share
-//      the gesture walkthrough with other lessons.
 //
 // The host of this app picks which lesson to render by id; the
 // LessonShell component is the only thing that needs to be mounted.
@@ -18,7 +16,6 @@ import {
   equivalenceStep,
   equivalenceTotalSteps,
 } from "./equivalence";
-import { withWalkthrough } from "./walkthrough";
 
 export type LessonManifest = {
   /** Stable id used for routing / selection. */
@@ -27,7 +24,7 @@ export type LessonManifest = {
   title: string;
   /** One-line description shown on the splash. */
   description: string;
-  /** The script (with walkthrough already spliced if applicable). */
+  /** The script that drives the chat + canvas. */
   lesson: Lesson;
   /** Total step count for the progress indicator. */
   totalSteps: number;
@@ -41,7 +38,7 @@ export const LESSONS: LessonManifest[] = [
     title: "Fraction Explorer",
     description:
       "Discover how fractions that look different can mean the same thing.",
-    lesson: withWalkthrough(equivalenceLesson),
+    lesson: equivalenceLesson,
     totalSteps: equivalenceTotalSteps,
     getStepForNode: equivalenceStep,
   },

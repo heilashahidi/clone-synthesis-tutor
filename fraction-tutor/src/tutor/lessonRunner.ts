@@ -204,7 +204,7 @@ export function useLessonRunner({
     [currentNode, lesson.nodes, processNode]
   );
 
-  // Imperatively jump to a node (used by the "Skip walkthrough" link).
+  // Imperatively jump to a node (useful for skip / debug shortcuts).
   const jumpTo = useCallback(
     (nodeId: string) => {
       const target = lesson.nodes[nodeId];

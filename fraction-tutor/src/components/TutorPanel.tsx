@@ -6,9 +6,6 @@ type TutorPanelProps = {
   currentNode: LessonNode | undefined;
   onOptionSelect: (index: number) => void;
   onAdvance: () => void;
-  // When set, the panel is in tutorial mode and a Skip button is
-  // shown in place of any lesson option/continue buttons.
-  onSkipTutorial?: () => void;
 };
 
 export function TutorPanel({
@@ -16,7 +13,6 @@ export function TutorPanel({
   currentNode,
   onOptionSelect,
   onAdvance,
-  onSkipTutorial,
 }: TutorPanelProps) {
   const showOptions =
     currentNode &&
@@ -52,33 +48,21 @@ export function TutorPanel({
       </div>
 
       <div className={styles.actions}>
-        {onSkipTutorial ? (
-          <button
-            type="button"
-            className={styles.skipLink}
-            onClick={onSkipTutorial}
-          >
-            Skip walkthrough
-          </button>
-        ) : (
-          <>
-            {showOptions &&
-              currentNode.options!.map((opt, i) => (
-                <button
-                  key={i}
-                  className={styles.optionButton}
-                  onClick={() => onOptionSelect(i)}
-                >
-                  {opt.label}
-                </button>
-              ))}
+        {showOptions &&
+          currentNode.options!.map((opt, i) => (
+            <button
+              key={i}
+              className={styles.optionButton}
+              onClick={() => onOptionSelect(i)}
+            >
+              {opt.label}
+            </button>
+          ))}
 
-            {showContinue && (
-              <button className={styles.continueButton} onClick={onAdvance}>
-                Continue →
-              </button>
-            )}
-          </>
+        {showContinue && (
+          <button className={styles.continueButton} onClick={onAdvance}>
+            Continue →
+          </button>
         )}
       </div>
     </div>

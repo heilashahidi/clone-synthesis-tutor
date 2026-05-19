@@ -32,7 +32,6 @@ export function LessonShell({
     advance,
     selectOption,
     notifyAction,
-    jumpTo,
   } = useLessonRunner({
     lesson,
     bars: manipState.bars,
@@ -45,10 +44,10 @@ export function LessonShell({
   const [muted, setMuted] = useState(false);
   useTutorVoice(lessonState.messages, muted);
 
-  // While we're on a walkthrough node (a wait_for_action whose condition
-  // is action_performed), only the expected gesture should do anything.
-  // After the walkthrough, expectedAction is null and every gesture
-  // works normally.
+  // On a wait_for_action node with an `action_performed` condition,
+  // only the expected gesture should do anything (the lesson is
+  // explicitly teaching that one move). On any other node
+  // expectedAction is null and every gesture works normally.
   const expectedAction =
     currentNode?.type === "wait_for_action" &&
     currentNode.condition?.type === "action_performed"
@@ -98,8 +97,8 @@ export function LessonShell({
       dropTargetId: string | null
     ) => {
       if (isLocked("MOVE_SEGMENT")) return;
-      // Combine-on-drop only outside the walkthrough; during the drag
-      // step we want a drop to register as movement, not combine.
+      // Combine-on-drop only when gestures aren't locked to a
+      // specific action — otherwise a drop registers as movement.
       if (dropTargetId && expectedAction === null) {
         const sourceBar = manipState.bars.find((b) => b.id === barId);
         const sourceIdx =
@@ -139,14 +138,6 @@ export function LessonShell({
     notifyAction("ADD_BAR");
   }, [expectedAction, manipState.bars.length, notifyAction]);
 
-  // While we're on a walkthrough_* node, offer a Skip link in the chat
-  // that jumps to the start of the real lesson.
-  const inWalkthrough =
-    currentNode?.id.startsWith("walkthrough_") ?? false;
-  const handleSkipWalkthrough = useCallback(() => {
-    jumpTo("intro_1");
-  }, [jumpTo]);
-
   return (
     <div className={styles.shell}>
       <ProgressIndicator
@@ -175,7 +166,6 @@ export function LessonShell({
           currentNode={currentNode}
           onOptionSelect={selectOption}
           onAdvance={advance}
-          onSkipTutorial={inWalkthrough ? handleSkipWalkthrough : undefined}
         />
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Fraction Equivalence Tutor is a four-layer system: a manipulative engine that owns fraction state, a tutor layer that drives the lesson from a JSON script, a voice layer that speaks tutor messages aloud, and a UI layer that renders and captures input. Lessons are pluggable data + a small TS wrapper; the engine and runner are content-agnostic.
+The Fraction Equivalence Tutor is a four-layer system: a manipulative engine that owns fraction state, a tutor layer that drives the lesson from a JSON script, a voice layer that speaks tutor messages aloud, and a UI layer that renders and captures input. Lessons are pluggable data + a small TS wrapper; the engine and runner are content-agnostic. Anthropic and ElevenLabs are reached through a small Cloudflare Worker proxy so their keys never end up in the public client bundle.
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -14,14 +14,15 @@ The Fraction Equivalence Tutor is a four-layer system: a manipulative engine tha
 │  Manipulative Engine │ Tutor Layer  │ Voice      │
 │  (useReducer)        │ (useLessonRunner)│ Layer  │
 │                      │              │            │
-│  - Bar state         │ - JSON script│ - ElevenLabs│
-│  - Split/Shade/      │ - Step counter│   TTS      │
-│    Combine/Move/     │ - LLM safety │ - Mute     │
-│    Remove/Shatter    │   net        │   toggle   │
+│  - Bar state         │ - JSON script│ - Calls    │
+│  - Split/Shade/      │ - Step counter│   proxy   │
+│    Combine/Move/     │ - LLM safety │   /tts     │
+│    Remove/Shatter    │   net (wired)│ - Mute     │
 └──────────────────────┴──────────────┴────────────┘
-         ▲                        │
-         │    reads state /       │
-         └── dispatches actions ──┘
+         ▲                        │                 │
+         │   reads state /        ▼                 ▼
+         └── dispatches actions ──┴── Worker proxy ─┘
+                                  (/tutor, /tts)
 ```
 
 ## Layer 1: Manipulative Engine
@@ -74,7 +75,7 @@ Split, combine, and shatter have non-trivial logic (inserting / removing segment
 
 ## Layer 2: Tutor Layer
 
-The tutor is script-first. Every planned moment in the lesson — dialogue, prompts, hints, gesture walkthrough — is written by a human and stored in JSON. The script is the voice the student hears 100% of the time today; the LLM safety net is a planned addition for unanticipated states.
+The tutor is script-first. Every planned moment in the lesson — dialogue, prompts, hints — is written by a human and stored in JSON. The script is the voice the student hears the vast majority of the time. A Claude Haiku safety net (via the proxy) fires a single contextual second-chance hint when the student is stuck on a `wait_for_action` node that has opted in.
 
 ### State machine
 
@@ -100,6 +101,7 @@ type LessonNode = {
   onMet?: string;
   hint?: string;            // Scripted hint shown after timeout
   hintDelay?: number;       // Seconds before hint shows (default 15)
+  llmFallthrough?: boolean; // Opt into the LLM second-chance hint
 
   // For check nodes
   correctNext?: string;
@@ -131,25 +133,23 @@ type LessonCondition =
 ```
 
 - **`fraction_equals`** is state-driven. The runner's `useEffect` on `bars` calls `checkCondition` after every change; when met, it advances to `onMet` after a 600 ms grace delay so the student sees their action land.
-- **`action_performed`** is event-driven. The runner exposes `notifyAction(actionType)`; `LessonShell` calls it after every user-triggered dispatch. If the current node is waiting for that exact action, the runner advances. This powers the walkthrough's gesture coaching.
+- **`action_performed`** is event-driven. The runner exposes `notifyAction(actionType)`; `LessonShell` calls it after every user-triggered dispatch. If the current node is waiting for that exact action, the runner advances. The current lesson uses fraction-state conditions; `action_performed` is available for any future lesson that wants to coach a specific gesture explicitly.
 
 ### Node types
 
 - **message**: Tutor speaks the scripted `message`. A "Continue" button taps to the next node.
 - **prompt**: Tutor speaks and shows response buttons; the student's choice picks the next node.
-- **wait_for_action**: Tutor watches either bars (`fraction_equals`) or dispatched actions (`action_performed`) and advances on match. A scripted `hint` can fire after `hintDelay` seconds.
+- **wait_for_action**: Tutor watches either bars (`fraction_equals`) or dispatched actions (`action_performed`) and advances on match. A scripted `hint` can fire after `hintDelay` seconds; if `llmFallthrough` is true, a contextual LLM hint fires another 15 s after that.
 - **check**: Assessment with `isCorrect` flags on options; correct vs. known-incorrect routes to separate scripted branches.
 
-### Lesson registry & composition
+### Lesson registry
 
 Lessons live under `src/tutor/lessons/`. Each lesson is a JSON content file plus a TS wrapper that supplies its step-counter config. A registry binds the two and exposes a manifest that the host app picks from by id.
 
 ```
 lessons/
-├── walkthrough.json     # Shared 5-step gesture fragment
-├── walkthrough.ts       # `withWalkthrough(lesson)` composer
-├── equivalence.json     # Lesson content (without walkthrough)
-├── equivalence.ts       # Wrapper: totalSteps, getStepForNode
+├── equivalence.json     # Lesson content (one self-contained script)
+├── equivalence.ts       # Wrapper: lesson + totalSteps + getStepForNode
 └── index.ts             # LESSONS[], getLesson(id), getDefaultLesson()
 ```
 
@@ -160,45 +160,41 @@ type LessonManifest = {
   id: string;
   title: string;          // Splash title
   description: string;    // Splash subtitle
-  lesson: Lesson;         // Script (walkthrough already composed in)
+  lesson: Lesson;         // The script
   totalSteps: number;     // Progress indicator denominator
   getStepForNode: (nodeId: string) => number;
 };
 ```
 
-**Walkthrough composer.** `walkthrough.json` is a *fragment* — `{ startNode, exitNodeId, nodes }` — not a full lesson. `withWalkthrough(lesson)` splices its nodes into a lesson, rewires `lesson_intro.next` to point at the walkthrough's start, and rewires the walkthrough's exit node's `onMet` to the lesson's original body entry. Any future lesson with a `lesson_intro` node can opt into the same walkthrough by calling the composer.
-
-**Step counter.** Previously hardcoded in the runner with `equivalence_`/`split_`/`quiz_` prefix matching, step-to-node mapping now lives next to each lesson's content in its TS wrapper. The runner accepts `totalSteps` and `getStepForNode` as options and stays generic.
+**Step counter.** The mapping from node id to step number lives next to each lesson's content in its TS wrapper. The runner takes `totalSteps` and `getStepForNode` as options and stays generic — no equivalence-specific prefix matching inside it.
 
 **Adding a new fraction lesson:**
 
-1. Author `my-lesson.json` (must include a `lesson_intro` message node if you want the shared walkthrough).
+1. Author `my-lesson.json` (any LessonNode shape).
 2. Author `my-lesson.ts` exporting `myLesson`, `myLessonTotalSteps`, `myLessonStep(nodeId)`.
-3. Add a `LessonManifest` entry to `LESSONS` in `index.ts`. Wrap with `withWalkthrough(...)` if desired.
+3. Add a `LessonManifest` entry to `LESSONS` in `index.ts`.
 
-The engine and runner need no changes — they only handle fraction bars, but any fraction-based pedagogy fits.
+The engine and runner need no changes. Lessons can teach gesture vocabulary in-context by interleaving short `message` nodes that explain the next move with `wait_for_action` nodes that watch for the resulting bar state — no separate walkthrough scaffolding required.
 
-### LLM safety net (planned)
+### LLM safety net
 
-The repo contains a placeholder `llmSafetyNet.ts` (Claude Haiku via a Cloudflare Worker proxy) but it is **not yet wired into the runner**. The intended design is:
+`src/tutor/llmSafetyNet.ts` exposes `handleUnrecognizedState(bars, taskDescription)` (Claude Haiku via the Worker proxy). `lessonRunner` schedules a second-chance hint 15 s after the scripted hint for any `wait_for_action` node that has `llmFallthrough: true` AND a proxy URL is configured. The LLM gets the live bar state and the node's prompt; its response is injected as a new tutor message and spoken like any other line.
 
-1. **Unrecognized manipulative state.** If the student creates a fraction the script has no branch for, the LLM generates a short, contextual redirect.
-2. **Misconception classification.** When a student gives a wrong answer outside known patterns, the LLM picks a tag (`WHOLE_NUMBER_THINKING`, `UNEQUAL_PARTITIONING`, `ADDITIVE_REASONING`, `OTHER`) and the runner branches to a scripted remediation node.
-3. **Dynamic hints.** After the scripted hint plays and 15 more seconds pass, the LLM generates a second hint referencing the student's actual bar state.
-
-All calls go through a proxy with a 2 second timeout; on failure the app falls back to a generic scripted message.
+- **Without a proxy URL** (`VITE_TUTOR_API_URL` unset), `isLlmConfigured()` returns false and the timer is never scheduled — the lesson runs entirely on the scripted script.
+- **On timeout / failure**, the proxy or `handleUnrecognizedState` returns a generic scripted fallback (`"Hmm, that's not quite what we're looking for…"`) so the student never sees an error.
+- **Misconception classification** and **unrecognized-state redirects** (the other two LLM cases from the original architecture) are not wired yet; the current script's known-wrong branches handle wrong answers.
 
 ## Layer 3: Voice Layer
 
-`src/voice/elevenLabsVoice.ts` calls ElevenLabs TTS for each tutor message. `src/voice/useTutorVoice.ts` is a hook that watches `lessonState.messages`, picks the latest *tutor* message, and speaks it — cancelling any in-flight playback so the chat never overlaps itself.
+`src/voice/elevenLabsVoice.ts` calls the Worker's **`POST /tts`** endpoint instead of ElevenLabs directly. The proxy holds `ELEVENLABS_API_KEY` as a Cloudflare secret and streams `audio/mpeg` back; the browser plays it through an `<audio>` element. `src/voice/useTutorVoice.ts` watches `lessonState.messages`, picks the latest *tutor* message, and speaks it — cancelling any in-flight playback so the chat never overlaps itself.
 
 Configuration:
 
-- `VITE_ELEVENLABS_API_KEY` (required for voice; voice is a no-op without it)
-- `VITE_ELEVENLABS_VOICE_ID` (default: Lila)
-- Model: `eleven_flash_v2_5` for low latency
+- `VITE_TUTOR_API_URL` — the proxy URL (also gates `isVoiceConfigured()`)
+- `VITE_ELEVENLABS_VOICE_ID` — voice id; the worker has a default if unset
+- Worker model: `eleven_flash_v2_5` (low latency)
 
-**Fraction pronunciation.** Before sending text to ElevenLabs, `toSpokenFractions` rewrites every `X/Y` pattern as `"X over Y"` (e.g., `"1/2"` → `"one over two"`). The chat bubble keeps the compact `1/2` display.
+**Fraction pronunciation.** Before the request goes out, `toSpokenFractions` rewrites every `X/Y` pattern as `"X over Y"` (e.g., `"1/2"` → `"one over two"`). The chat bubble keeps the compact `1/2` display.
 
 **Browser autoplay.** Browsers block audio until the user has clicked once. The `Splash` start screen exists primarily to capture that first gesture before `LessonShell` mounts; once started, every tutor line speaks automatically.
 
@@ -231,7 +227,7 @@ A black grid background fills the page. The header has the lesson title, the mut
 
 ### Gesture model
 
-The toolbar is gone; gestures drive everything. While a `wait_for_action` walkthrough node is active, only the expected gesture has any effect; everything else silently no-ops. Outside the walkthrough, all gestures are unrestricted.
+The toolbar is gone; gestures drive everything. While a `wait_for_action` node with an `action_performed` condition is active, only the expected gesture has any effect; everything else silently no-ops. On any other node (including `fraction_equals` waits) gestures are unrestricted.
 
 | Gesture | Action |
 |---|---|
@@ -241,7 +237,6 @@ The toolbar is gone; gestures drive everything. While a `wait_for_action` walkth
 | Drag a segment | Free-floating move — saved as the segment's `x`, `y` |
 | Drop a dragged segment on an adjacent same-shade neighbor | `COMBINE` |
 | Double-tap empty workspace | `ADD_BAR` (color cycles teal → blue → coral → purple) |
-| Tap Skip walkthrough (during walkthrough_*) | Runner jumps to `intro_1` |
 
 ### Touch targets
 
@@ -255,13 +250,29 @@ All interactive elements are minimum 48×48 px for child-friendly touch input. F
 - **Free move**: `useMotionValue` follows the pointer during drag; releases spring to either the new position (if free move) or back to home (if a combine fires).
 - **Equivalence reveal**: When two bars share a fraction, a teal "= Same amount!" badge fades in.
 
+## Proxy (Cloudflare Worker)
+
+`proxy/src/index.ts` is a small Worker with two routes:
+
+| Route | Body | Response | Upstream |
+|---|---|---|---|
+| `POST /tutor` | `{ system, user }` | `{ text }` | Anthropic Messages API (Claude Haiku, max 160 tokens) |
+| `POST /tts` | `{ text, voiceId? }` | `audio/mpeg` stream | ElevenLabs TTS (`eleven_flash_v2_5`) |
+
+Secrets (Cloudflare `wrangler secret put`):
+- `ANTHROPIC_API_KEY`
+- `ELEVENLABS_API_KEY`
+
+CORS is wildcard for now — fine for the demo, should be locked to the Pages origin before production. No rate limiting yet; a per-IP cap via Workers KV or Durable Objects is the natural next step.
+
 ## Data flow
 
 ```
 Student taps / drags / holds a segment, or double-taps empty space
   → Segment / Workspace fires the matching handler
   → LessonShell:
-      ├── (a) checks the active walkthrough's expectedAction; no-ops if mismatched
+      ├── (a) if the current node has an action_performed condition,
+      │       no-ops unless the gesture matches the expected action
       ├── (b) dispatches the corresponding reducer action
       └── (c) calls runner.notifyAction(actionType)
   → Reducer updates bars
@@ -271,12 +282,27 @@ Student taps / drags / holds a segment, or double-taps empty space
       └── notifyAction(actionType) → if current node is wait_for_action
           with `action_performed` matching that action, advance after 400 ms
   → Tutor message updates
-  → useTutorVoice speaks the new message (cancels any in-flight audio)
+  → useTutorVoice fetches audio from the proxy and plays it
   → UI re-renders
 ```
 
-Button taps in the tutor panel (Continue, option, Skip walkthrough) call the runner's `advance` / `selectOption` / `jumpTo` directly — they bypass the action-notify path.
+If `wait_for_action` has `llmFallthrough: true`, a third timer is scheduled at `(hintDelay + 15) s`. When it fires, the runner calls the proxy's `/tutor` endpoint with the live bars and the node's prompt; the response is injected as a new tutor message.
+
+Button taps in the tutor panel (Continue, option) call the runner's `advance` / `selectOption` directly — they bypass the action-notify path.
+
+## Deployment
+
+- **Frontend**: Cloudflare Pages.
+  - URL: `https://fraction-tutor-1l1.pages.dev`
+  - Build: `npm run build` in `fraction-tutor/` → `dist/`
+  - Deploy: `npx wrangler pages deploy fraction-tutor/dist --project-name=fraction-tutor`
+- **Proxy**: Cloudflare Workers.
+  - URL: `https://fraction-tutor-proxy.heila-shahidi.workers.dev`
+  - Deploy: `cd proxy && npx wrangler deploy`
+  - Secrets: `npx wrangler secret put ANTHROPIC_API_KEY` / `... ELEVENLABS_API_KEY`
+
+The frontend reads `VITE_TUTOR_API_URL` at build time and bakes the URL into the bundle. Switching environments (local dev vs. production) is a one-line `.env` change followed by `npm run build && wrangler pages deploy`.
 
 ## Offline behavior
 
-The lesson is fully functional offline. All tutor dialogue, hints, feedback, and assessment prompts are scripted and bundled in the app. The (planned) LLM safety net only supplements edge cases; when offline these would fall back to a generic scripted redirect. Lesson progress could be persisted locally (e.g., via Capacitor Preferences) once iPad packaging is added.
+The script and all UI logic are bundled and run client-side; the page itself works offline once cached. The voice layer and LLM safety net both require the proxy, so without a network the tutor's lines won't be spoken and the LLM hint never fires — but the lesson still progresses on Continue / option taps, gesture detection still works, and progress feedback (chat, equivalence indicator) is unaffected. Lesson progress could be persisted locally (e.g., via Capacitor Preferences) once iPad packaging is added.

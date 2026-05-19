@@ -14,7 +14,6 @@ export const equivalenceLesson = json as Lesson;
 export const equivalenceTotalSteps = 7;
 
 export function equivalenceStep(nodeId: string): number {
-  if (nodeId.startsWith("walkthrough_")) return 1;
   if (nodeId.startsWith("lesson_intro")) return 1;
   if (nodeId.startsWith("intro")) return 1;
   if (nodeId.startsWith("split")) return 2;
