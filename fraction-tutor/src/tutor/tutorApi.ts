@@ -6,6 +6,12 @@ type TutorApiResponse = {
   ok: boolean;
 };
 
+/** True when a proxy endpoint is configured. The LLM safety net
+ *  short-circuits when this is false (no fetch is made). */
+export function isLlmConfigured(): boolean {
+  return Boolean(API_URL);
+}
+
 export async function callTutorLLM(
   systemPrompt: string,
   userPrompt: string

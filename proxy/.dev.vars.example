@@ -1,0 +1,5 @@
+# Copy this file to .dev.vars (gitignored) and fill in your key.
+# Wrangler reads .dev.vars automatically when running `wrangler dev`.
+# Get a key at https://console.anthropic.com/settings/keys
+
+ANTHROPIC_API_KEY=
