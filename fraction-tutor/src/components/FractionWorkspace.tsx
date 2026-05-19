@@ -18,7 +18,7 @@ type FractionWorkspaceProps = {
     x: number,
     y: number,
     dropTargetId: string | null
-  ) => void;
+  ) => boolean;
   onEmptyDoubleTap: () => void;
 };
 

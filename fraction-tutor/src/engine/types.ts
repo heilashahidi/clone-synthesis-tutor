@@ -61,6 +61,7 @@ export type LessonCondition =
         | "ADD_BAR"
         | "SHADE"
         | "SPLIT"
+        | "COMBINE"
         | "MOVE_SEGMENT"
         | "REMOVE_SEGMENT";
     };
@@ -101,6 +102,13 @@ export type LessonNode = {
 
   // LLM safety net
   llmFallthrough?: boolean;
+
+  // Restrict which gestures the student can use while on this node.
+  // Only honored for wait_for_action nodes. If omitted on a
+  // wait_for_action with a fraction_equals condition, all gestures
+  // are allowed. message / prompt / check nodes always lock all
+  // gestures (the only way forward is the Continue / option buttons).
+  allowedActions?: TutorialActionTrigger[];
 
   // Setup: configure the manipulative at this step
   setup?: {

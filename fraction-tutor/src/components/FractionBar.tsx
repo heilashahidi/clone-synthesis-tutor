@@ -18,7 +18,7 @@ type FractionBarProps = {
     x: number,
     y: number,
     dropTargetId: string | null
-  ) => void;
+  ) => boolean;
 };
 
 export function FractionBar({

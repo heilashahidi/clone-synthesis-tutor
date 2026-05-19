@@ -1,4 +1,4 @@
-import { useCallback, useReducer, useState } from "react";
+import { useCallback, useMemo, useReducer, useState } from "react";
 import {
   fractionReducer,
   initialState,
@@ -8,7 +8,11 @@ import { useTutorVoice } from "../voice/useTutorVoice";
 import { FractionWorkspace } from "./FractionWorkspace";
 import { TutorPanel } from "./TutorPanel";
 import { ProgressIndicator } from "./ProgressIndicator";
-import type { BarColor, Lesson } from "../engine/types";
+import type {
+  BarColor,
+  Lesson,
+  TutorialActionTrigger,
+} from "../engine/types";
 import styles from "../styles/LessonShell.module.css";
 
 type LessonShellProps = {
@@ -44,17 +48,26 @@ export function LessonShell({
   const [muted, setMuted] = useState(false);
   useTutorVoice(lessonState.messages, muted);
 
-  // On a wait_for_action node with an `action_performed` condition,
-  // only the expected gesture should do anything (the lesson is
-  // explicitly teaching that one move). On any other node
-  // expectedAction is null and every gesture works normally.
-  const expectedAction =
-    currentNode?.type === "wait_for_action" &&
-    currentNode.condition?.type === "action_performed"
-      ? currentNode.condition.action
-      : null;
-  const isLocked = (action: string) =>
-    expectedAction !== null && expectedAction !== action;
+  // Compute which gestures the student is allowed to use on the
+  // current node. `null` = no restriction (e.g., dev/demo nodes
+  // without an `allowedActions` list). An empty set means every
+  // gesture is silently a no-op — that's the default for
+  // message / prompt / check nodes where the only way forward is
+  // a Continue or option-button tap.
+  const allowedActions = useMemo<Set<TutorialActionTrigger> | null>(() => {
+    if (!currentNode) return null;
+    if (currentNode.type !== "wait_for_action") {
+      return new Set<TutorialActionTrigger>(); // nothing allowed
+    }
+    if (currentNode.allowedActions) return new Set(currentNode.allowedActions);
+    if (currentNode.condition?.type === "action_performed") {
+      return new Set<TutorialActionTrigger>([currentNode.condition.action]);
+    }
+    return null; // wait_for_action with fraction_equals, no list: open
+  }, [currentNode]);
+
+  const isLocked = (action: TutorialActionTrigger) =>
+    allowedActions !== null && !allowedActions.has(action);
 
   // ── Gesture handlers ────────────────────────────────────────────────
 
@@ -64,7 +77,7 @@ export function LessonShell({
       dispatch({ type: "SHADE", barId, segmentId });
       notifyAction("SHADE");
     },
-    [expectedAction, notifyAction]
+    [allowedActions, notifyAction]
   );
 
   const handleSegmentDoubleTap = useCallback(
@@ -73,7 +86,7 @@ export function LessonShell({
       dispatch({ type: "SPLIT", barId, segmentId });
       notifyAction("SPLIT");
     },
-    [expectedAction, notifyAction]
+    [allowedActions, notifyAction]
   );
 
   const handleSegmentLongPress = useCallback(
@@ -85,9 +98,12 @@ export function LessonShell({
       dispatch({ type: "REMOVE_SEGMENT", barId, segmentId });
       notifyAction("REMOVE_SEGMENT");
     },
-    [expectedAction, manipState.bars, notifyAction]
+    [allowedActions, manipState.bars, notifyAction]
   );
 
+  // Returns true if the drag-end was handled (state changed); the
+  // Segment uses the return value to decide whether to spring its
+  // motion value back to the model position.
   const handleSegmentDragEnd = useCallback(
     (
       barId: string,
@@ -95,11 +111,10 @@ export function LessonShell({
       x: number,
       y: number,
       dropTargetId: string | null
-    ) => {
-      if (isLocked("MOVE_SEGMENT")) return;
-      // Combine-on-drop only when gestures aren't locked to a
-      // specific action — otherwise a drop registers as movement.
-      if (dropTargetId && expectedAction === null) {
+    ): boolean => {
+      // Combine path: only when COMBINE is allowed AND the drop
+      // landed on an adjacent same-bar neighbor.
+      if (dropTargetId && !isLocked("COMBINE")) {
         const sourceBar = manipState.bars.find((b) => b.id === barId);
         const sourceIdx =
           sourceBar?.segments.findIndex((s) => s.id === segmentId) ?? -1;
@@ -121,13 +136,15 @@ export function LessonShell({
           const leftIdx = Math.min(sourceIdx, targetIdx);
           const leftId = sourceBar!.segments[leftIdx].id;
           dispatch({ type: "COMBINE", barId, segmentId: leftId });
-          return;
+          return true;
         }
       }
+      if (isLocked("MOVE_SEGMENT")) return false; // segment should snap home
       dispatch({ type: "MOVE_SEGMENT", barId, segmentId, x, y });
       if (x !== 0 || y !== 0) notifyAction("MOVE_SEGMENT");
+      return true;
     },
-    [expectedAction, manipState.bars, notifyAction]
+    [allowedActions, manipState.bars, notifyAction]
   );
 
   const handleEmptyDoubleTap = useCallback(() => {
@@ -136,7 +153,7 @@ export function LessonShell({
       BAR_COLOR_CYCLE[manipState.bars.length % BAR_COLOR_CYCLE.length];
     dispatch({ type: "ADD_BAR", color });
     notifyAction("ADD_BAR");
-  }, [expectedAction, manipState.bars.length, notifyAction]);
+  }, [allowedActions, manipState.bars.length, notifyAction]);
 
   return (
     <div className={styles.shell}>

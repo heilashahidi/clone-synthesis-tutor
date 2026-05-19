@@ -30,7 +30,10 @@ type SegmentProps = {
   onTap: () => void;
   onDoubleTap: () => void;
   onLongPress: () => void;
-  onDragEnd: (x: number, y: number, dropTargetId: string | null) => void;
+  // Returns true if the parent handled the drag (will update the
+  // model position). Returning false tells the segment to spring
+  // its motion value back to its current x, y (i.e., snap home).
+  onDragEnd: (x: number, y: number, dropTargetId: string | null) => boolean;
 };
 
 export function Segment({
@@ -149,7 +152,22 @@ export function Segment({
       }
     }
 
-    onDragEndProp(newX, newY, dropTargetId);
+    const handled = onDragEndProp(newX, newY, dropTargetId);
+    if (!handled) {
+      // Parent rejected the drag (gesture locked). Spring motion
+      // back to the current model position — the useEffect on x,y
+      // won't fire because the prop didn't change.
+      animate(xMotion, x, {
+        type: "spring",
+        stiffness: 350,
+        damping: 30,
+      });
+      animate(yMotion, y, {
+        type: "spring",
+        stiffness: 350,
+        damping: 30,
+      });
+    }
   };
 
   // Cancel any pending tap-timer if the component unmounts mid-tap
