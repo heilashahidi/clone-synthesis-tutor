@@ -1,31 +1,32 @@
 .workspace {
   background: #ffffff;
   border: 1px solid #e0dfda;
-  border-radius: 12px;
-  padding: 24px 20px;
-  min-height: 180px;
+  border-radius: 16px;
+  padding: 32px 28px;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 24px;
 }
 
 .equivalenceIndicator {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   padding: 8px 0 0;
   animation: fadeIn 0.5s ease;
 }
 
 .equalsSign {
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 500;
   color: #0F6E56;
 }
 
 .equalsText {
-  font-size: 14px;
+  font-size: 18px;
   color: #0F6E56;
   font-weight: 500;
 }
@@ -34,9 +35,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 120px;
+  height: 160px;
   color: #888780;
-  font-size: 14px;
+  font-size: 18px;
 }
 
 @keyframes fadeIn {

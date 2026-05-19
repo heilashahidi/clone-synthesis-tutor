@@ -7,14 +7,17 @@ type FractionWorkspaceProps = {
   bars: FractionBarType[];
   selectedSegmentId: string | null;
   onSegmentTap: (barId: string, segmentId: string) => void;
+  onSegmentSplit: (barId: string, segmentId: string) => void;
+  onSegmentCombine: (barId: string, segmentId: string) => void;
 };
 
 export function FractionWorkspace({
   bars,
   selectedSegmentId,
   onSegmentTap,
+  onSegmentSplit,
+  onSegmentCombine,
 }: FractionWorkspaceProps) {
-  // Check if any two bars are equivalent (both non-zero)
   const areEquivalent =
     bars.length >= 2 &&
     barToFraction(bars[0]).numerator > 0 &&
@@ -29,6 +32,8 @@ export function FractionWorkspace({
           bar={bar}
           selectedSegmentId={selectedSegmentId}
           onSegmentTap={onSegmentTap}
+          onSegmentSplit={onSegmentSplit}
+          onSegmentCombine={onSegmentCombine}
         />
       ))}
       {areEquivalent && (

@@ -39,6 +39,26 @@ export function LessonShell({ lesson }: LessonShellProps) {
     [manipState.selectedBarId, manipState.selectedSegmentId]
   );
 
+  // Drag-down on a segment splits it in place
+  const handleSegmentSplit = useCallback(
+    (barId: string, segmentId: string) => {
+      dispatch({ type: "SPLIT", barId, segmentId });
+      dispatch({ type: "DESELECT" });
+    },
+    []
+  );
+
+  // Drag-horizontal on a segment merges it with a neighbor.
+  // The caller supplies the segmentId whose right neighbor should be absorbed
+  // (so drag-right passes the dragged segment; drag-left passes its left neighbor).
+  const handleSegmentCombine = useCallback(
+    (barId: string, segmentId: string) => {
+      dispatch({ type: "COMBINE", barId, segmentId });
+      dispatch({ type: "DESELECT" });
+    },
+    []
+  );
+
   const handleSplit = useCallback(() => {
     if (manipState.selectedBarId && manipState.selectedSegmentId) {
       dispatch({
@@ -94,6 +114,8 @@ export function LessonShell({ lesson }: LessonShellProps) {
         bars={manipState.bars}
         selectedSegmentId={manipState.selectedSegmentId}
         onSegmentTap={handleSegmentTap}
+        onSegmentSplit={handleSegmentSplit}
+        onSegmentCombine={handleSegmentCombine}
       />
 
       {!lessonState.isComplete && (

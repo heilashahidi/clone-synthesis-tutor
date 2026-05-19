@@ -2,16 +2,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4px 16px;
+  padding: 0 4px;
 }
 
 .title {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 500;
   color: #2c2c2a;
 }
 
 .step {
-  font-size: 13px;
+  font-size: 16px;
   color: #888780;
 }

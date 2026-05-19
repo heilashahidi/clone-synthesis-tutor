@@ -1,15 +1,14 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 20px;
 }
 
 .fractionLabel {
-  font-size: 16px;
+  font-size: 28px;
   font-weight: 500;
   color: #2c2c2a;
-  min-width: 40px;
+  min-width: 80px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -17,8 +16,8 @@
 .bar {
   flex: 1;
   display: flex;
-  height: 56px;
-  border-radius: 8px;
+  height: 96px;
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid #d3d1c7;
   --border-color: #b4b2a9;

@@ -1,25 +1,27 @@
 .actionBar {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
-  padding: 8px 0;
+  padding: 0;
 }
 
 .button {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 12px 20px;
-  font-size: 14px;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 28px;
+  font-size: 17px;
   font-weight: 500;
   color: #2c2c2a;
   background: #ffffff;
   border: 1px solid #d3d1c7;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: background-color 0.15s, border-color 0.15s;
+  min-height: 56px;
 }
 
 .button:hover:not(:disabled) {
@@ -37,7 +39,7 @@
 }
 
 .icon {
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1;
 }
 
