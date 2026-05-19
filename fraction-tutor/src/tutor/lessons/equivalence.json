@@ -78,7 +78,7 @@
     "equiv_challenge_1": {
       "id": "equiv_challenge_1",
       "type": "message",
-      "message": "I'm adding a second bar below. Can you split it into 4 pieces and color 2 of them? Use the Split button, then tap pieces to shade them.",
+      "message": "I'm adding a second bar below. Can you split it into 4 pieces and color 2 of them? Tap a piece twice to split it; tap once to color it in.",
       "next": "equiv_wait_1",
       "setup": {
         "bars": [
@@ -97,7 +97,7 @@
         "target": { "numerator": 2, "denominator": 4 }
       },
       "onMet": "equiv_reveal_1",
-      "hint": "First, select the blue bar and press Split a few times to get 4 pieces. Then tap 2 pieces to color them.",
+      "hint": "Tap a piece in the blue bar twice to split it in half. Keep splitting until you have 4 pieces, then tap two of them to color them in.",
       "hintDelay": 15,
       "llmFallthrough": true
     },
