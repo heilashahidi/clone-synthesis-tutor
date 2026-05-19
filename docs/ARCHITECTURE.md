@@ -59,6 +59,8 @@ type ManipulativeState = {
 | `ADD_BAR(color)` | Appends a new bar with 1 unshaded segment | Creates a fresh bar for comparison |
 | `RESET` | Clears all bars, returns to initial state | Lets the student start over |
 | `SET_STATE(bars)` | Replaces entire state (used by tutor to set up problems) | Tutor can stage a specific configuration |
+| `SELECT(barId, segmentId)` | Marks a segment as selected (visual highlight) | Shows the student which piece they're about to act on |
+| `DESELECT` | Clears the current selection | Resets after an action completes |
 
 ### Why useReducer over useState
 
@@ -78,33 +80,45 @@ Each lesson is a JSON file with nodes. The runner tracks the current node and tr
 type LessonNode = {
   id: string;
   type: "message" | "prompt" | "wait_for_action" | "check";
+  next?: string;            // Node ID for auto-advance (message nodes)
 
   // Scripted dialogue (primary — always present)
-  message: string;        // The exact tutor dialogue for this node
+  message: string;          // The exact tutor dialogue for this node
 
-  // For prompts (student picks a response)
+  // For prompt and check nodes
   options?: {
     label: string;
-    next: string;         // Node ID to transition to
+    next: string;           // Node ID to transition to
+    isCorrect?: boolean;    // Used by check nodes to flag the right answer
   }[];
 
-  // For wait_for_action (tutor watches manipulative state)
+  // For wait_for_action nodes
   condition?: {
     type: "fraction_equals";
-    barId: string;
+    barIndex: number;       // Index into the bars array (0-based)
     target: { numerator: number; denominator: number };
   };
-  onMet: string;          // Node ID when condition is satisfied
-  hint: string;           // Scripted hint shown after N seconds of no progress
+  onMet?: string;           // Node ID when condition is satisfied
+  hint?: string;            // Scripted hint shown after timeout
+  hintDelay?: number;       // Seconds before hint shows (default 15)
 
-  // For check (graded assessment)
+  // For check nodes
   correctNext?: string;
-  correctMessage: string;   // Scripted feedback for correct answer
+  correctMessage?: string;
   incorrectNext?: string;
-  incorrectMessage: string; // Scripted feedback for known wrong answers
+  incorrectMessage?: string;
 
   // LLM fallthrough (only used when no scripted branch matches)
-  llmFallthrough?: boolean; // If true, call LLM when student action doesn't match any branch
+  llmFallthrough?: boolean;
+
+  // Setup: configure the manipulative at this step
+  setup?: {
+    bars: Array<{
+      segments: number;     // Total segments in the bar
+      shaded: number;       // How many are shaded (from the left)
+      color: "teal" | "blue" | "coral" | "purple";
+    }>;
+  };
 };
 ```
 
@@ -163,20 +177,20 @@ The UI is a dumb rendering layer. It receives state and dispatches events. It ma
 
 ```
 ┌──────────────────────────────────────────────────┐
-│  Fraction explorer                    Step 2/5   │
+│  Fraction explorer                    Step 3/7   │
 ├──────────────────────────────────────────────────┤
 │                                                  │
 │  1/2  [████████████░░░░░░░░░░░░]                │
 │                                                  │
 │  2/4  [██████░░░░░░│██████░░░░░░]               │
 │                                                  │
-│  (alignment line showing equivalence)            │
+│  (= Same amount! when equivalent)                │
 │                                                  │
 ├──────────────────────────────────────────────────┤
-│  [Split] [Combine] [New bar] [Reset]             │
+│  [Color] [Split] [Combine]           [Reset]     │
 ├──────────────────────────────────────────────────┤
-│  🤖 Nice work! What do you notice about the      │
-│     shaded parts?                                │
+│  ✦ Nice work! What do you notice about the       │
+│    shaded parts?                                 │
 │                                                  │
 │  [They're the same!]    [I'm not sure]           │
 └──────────────────────────────────────────────────┘
@@ -199,7 +213,8 @@ All interactive elements are minimum 48x48px for child-friendly touch input. Fra
 
 ```
 Student taps segment
-  → UI dispatches SHADE(barId, segmentId)
+  → If different from current selection: UI dispatches SELECT(barId, segmentId)
+  → If same as current selection: UI dispatches SHADE(barId, segmentId)
   → Reducer updates state
   → LessonRunner checks if current node's condition is met
     → If yes: advances to next node, renders scripted message
@@ -207,6 +222,11 @@ Student taps segment
     → If no match and no LLM: renders generic scripted fallback
     → If condition not yet met: does nothing (student keeps exploring)
   → UI re-renders with new bar state and any new tutor message
+
+Student taps action button (Color / Split / Combine)
+  → Action dispatched on the currently selected segment
+  → DESELECT dispatched to clear selection
+  → Same condition-checking flow as above
 ```
 
 ## API proxy

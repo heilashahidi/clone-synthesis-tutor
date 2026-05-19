@@ -1,0 +1,26 @@
+.segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  cursor: pointer;
+  background-color: #f0efea;
+  transition: background-color 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.segment:active {
+  opacity: 0.85;
+}
+
+.selected {
+  box-shadow: inset 0 0 0 3px #378ADD;
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #888780;
+  pointer-events: none;
+}

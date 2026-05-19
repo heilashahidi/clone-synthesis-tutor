@@ -1,0 +1,17 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 16px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #2c2c2a;
+}
+
+.step {
+  font-size: 13px;
+  color: #888780;
+}

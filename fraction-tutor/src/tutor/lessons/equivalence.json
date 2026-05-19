@@ -1,0 +1,362 @@
+{
+  "id": "fraction-equivalence-1",
+  "title": "Same size, different pieces",
+  "startNode": "intro_1",
+  "nodes": {
+    "intro_1": {
+      "id": "intro_1",
+      "type": "message",
+      "message": "Hi there! Today we're going to play with fraction bars. See that bar up top? It's one whole piece right now.",
+      "next": "intro_tap_wait",
+      "setup": {
+        "bars": [
+          { "segments": 1, "shaded": 0, "color": "teal" }
+        ]
+      }
+    },
+    "intro_tap_wait": {
+      "id": "intro_tap_wait",
+      "type": "wait_for_action",
+      "message": "Go ahead — tap the bar to shade it!",
+      "condition": {
+        "type": "fraction_equals",
+        "barIndex": 0,
+        "target": { "numerator": 1, "denominator": 1 }
+      },
+      "onMet": "intro_3",
+      "hint": "Just tap on the bar to color it in. You got this!",
+      "hintDelay": 10
+    },
+    "intro_3": {
+      "id": "intro_3",
+      "type": "message",
+      "message": "Nice! You colored the whole bar. That means we have one whole — or 1/1. Now let's do something cool.",
+      "next": "split_intro_1"
+    },
+
+    "split_intro_1": {
+      "id": "split_intro_1",
+      "type": "message",
+      "message": "I'm going to split this bar into 2 equal pieces. Watch what happens!",
+      "next": "split_intro_2",
+      "setup": {
+        "bars": [
+          { "segments": 2, "shaded": 1, "color": "teal" }
+        ]
+      }
+    },
+    "split_intro_2": {
+      "id": "split_intro_2",
+      "type": "prompt",
+      "message": "See how one piece is colored and one isn't? One out of two pieces is colored. That's one-half — we write it as 1/2. Does that make sense?",
+      "options": [
+        { "label": "Yep, 1 out of 2!", "next": "build_half_confirm" },
+        { "label": "I think so", "next": "build_half_confirm" },
+        { "label": "Not really", "next": "split_explain" }
+      ]
+    },
+    "split_explain": {
+      "id": "split_explain",
+      "type": "message",
+      "message": "No worries! Look at the bar — it has 2 pieces total. The bottom number (2) tells us how many pieces. The colored piece is 1 — that's the top number. So 1 piece out of 2 total is 1/2!",
+      "next": "build_half_confirm"
+    },
+    "build_half_confirm": {
+      "id": "build_half_confirm",
+      "type": "message",
+      "message": "Great! So the top bar shows 1/2. Now here's the big question…",
+      "next": "equiv_challenge_1"
+    },
+
+    "equiv_challenge_1": {
+      "id": "equiv_challenge_1",
+      "type": "message",
+      "message": "I'm adding a second bar below. Can you split it into 4 pieces and color 2 of them? Use the Split button, then tap pieces to shade them.",
+      "next": "equiv_wait_1",
+      "setup": {
+        "bars": [
+          { "segments": 2, "shaded": 1, "color": "teal" },
+          { "segments": 1, "shaded": 0, "color": "blue" }
+        ]
+      }
+    },
+    "equiv_wait_1": {
+      "id": "equiv_wait_1",
+      "type": "wait_for_action",
+      "message": "Split the blue bar into 4 pieces, then shade 2 of them!",
+      "condition": {
+        "type": "fraction_equals",
+        "barIndex": 1,
+        "target": { "numerator": 2, "denominator": 4 }
+      },
+      "onMet": "equiv_reveal_1",
+      "hint": "First, select the blue bar and press Split a few times to get 4 pieces. Then tap 2 pieces to color them.",
+      "hintDelay": 15,
+      "llmFallthrough": true
+    },
+    "equiv_reveal_1": {
+      "id": "equiv_reveal_1",
+      "type": "message",
+      "message": "Look at that! You made 2/4. Now look at both bars side by side. See how the colored parts are exactly the same size?",
+      "next": "equiv_question_1"
+    },
+    "equiv_question_1": {
+      "id": "equiv_question_1",
+      "type": "prompt",
+      "message": "The colored part of 1/2 and the colored part of 2/4 take up the same amount of space. What does that tell us?",
+      "options": [
+        { "label": "They're equal!", "next": "equiv_confirm_1", "isCorrect": true },
+        { "label": "2/4 is bigger?", "next": "equiv_misconception_1" },
+        { "label": "I'm not sure", "next": "equiv_hint_1" }
+      ]
+    },
+    "equiv_confirm_1": {
+      "id": "equiv_confirm_1",
+      "type": "message",
+      "message": "Exactly right! 1/2 and 2/4 are the same amount — they're equivalent fractions. More pieces doesn't mean more — it means smaller pieces!",
+      "next": "equiv_challenge_2_setup"
+    },
+    "equiv_misconception_1": {
+      "id": "equiv_misconception_1",
+      "type": "message",
+      "message": "I see why you might think that — 2 is a bigger number than 1, and 4 is bigger than 2. But look at the bars! The colored parts are the same size. When we split into more pieces, each piece gets smaller. So 2 out of 4 is the same amount as 1 out of 2.",
+      "next": "equiv_confirm_1"
+    },
+    "equiv_hint_1": {
+      "id": "equiv_hint_1",
+      "type": "message",
+      "message": "That's okay! Look really carefully at where the colored part ends on each bar. See how they line up? If they take up the same space, that means they're the same amount — even though the numbers look different.",
+      "next": "equiv_confirm_1"
+    },
+
+    "equiv_challenge_2_setup": {
+      "id": "equiv_challenge_2_setup",
+      "type": "message",
+      "message": "Let's try another one! Here's a bar showing 2/3 — two out of three pieces colored. Can you make the bar below equal to 2/3?",
+      "next": "equiv_wait_2",
+      "setup": {
+        "bars": [
+          { "segments": 3, "shaded": 2, "color": "coral" },
+          { "segments": 1, "shaded": 0, "color": "purple" }
+        ]
+      }
+    },
+    "equiv_wait_2": {
+      "id": "equiv_wait_2",
+      "type": "wait_for_action",
+      "message": "Make the purple bar equal to 2/3. Try splitting it into 6 pieces and shading 4!",
+      "condition": {
+        "type": "fraction_equals",
+        "barIndex": 1,
+        "target": { "numerator": 2, "denominator": 3 }
+      },
+      "onMet": "equiv_reveal_2",
+      "hint": "Look at where the color ends on the top bar. Try splitting your bar into more pieces and shading some — can you make the colored parts end at the same spot?",
+      "hintDelay": 20,
+      "llmFallthrough": true
+    },
+    "equiv_reveal_2": {
+      "id": "equiv_reveal_2",
+      "type": "message",
+      "message": "Awesome! See how the colored parts line up perfectly again? You found another equivalent fraction!",
+      "next": "equiv_question_2"
+    },
+    "equiv_question_2": {
+      "id": "equiv_question_2",
+      "type": "prompt",
+      "message": "Do you notice a pattern? When we make equivalent fractions, what happens?",
+      "options": [
+        { "label": "More pieces but same amount colored", "next": "pattern_confirm", "isCorrect": true },
+        { "label": "The numbers get bigger", "next": "pattern_redirect" },
+        { "label": "Not sure yet", "next": "pattern_explain" }
+      ]
+    },
+    "pattern_confirm": {
+      "id": "pattern_confirm",
+      "type": "message",
+      "message": "That's it! When we split into more pieces, each piece is smaller — but we color more of them. So the total colored amount stays the same. That's what equivalent fractions are all about.",
+      "next": "non_example_setup"
+    },
+    "pattern_redirect": {
+      "id": "pattern_redirect",
+      "type": "message",
+      "message": "The numbers do get bigger — good eye! But that's not the whole story. Look at the bars: even though the numbers change, the colored part stays the same size. More pieces, but smaller pieces, and more of them colored.",
+      "next": "pattern_confirm"
+    },
+    "pattern_explain": {
+      "id": "pattern_explain",
+      "type": "message",
+      "message": "No problem — let's look again. The first bar has fewer, bigger pieces. The second bar has more, smaller pieces. But the colored parts are exactly the same length! That's because equivalent fractions represent the same amount.",
+      "next": "non_example_setup"
+    },
+
+    "non_example_setup": {
+      "id": "non_example_setup",
+      "type": "message",
+      "message": "Now let's check something. Is 1/2 the same as 1/3? Let's see!",
+      "next": "non_example_reveal",
+      "setup": {
+        "bars": [
+          { "segments": 2, "shaded": 1, "color": "teal" },
+          { "segments": 3, "shaded": 1, "color": "coral" }
+        ]
+      }
+    },
+    "non_example_reveal": {
+      "id": "non_example_reveal",
+      "type": "prompt",
+      "message": "Look at the colored parts. Do 1/2 and 1/3 take up the same space?",
+      "options": [
+        { "label": "No — 1/2 is bigger!", "next": "non_example_correct", "isCorrect": true },
+        { "label": "They look the same?", "next": "non_example_incorrect" },
+        { "label": "1/3 is bigger?", "next": "non_example_misconception" }
+      ]
+    },
+    "non_example_correct": {
+      "id": "non_example_correct",
+      "type": "message",
+      "message": "Right! 1/2 is bigger than 1/3. See how the colored parts don't line up? When fractions aren't equivalent, the colored parts are different sizes. The bars don't lie!",
+      "next": "assessment_intro"
+    },
+    "non_example_incorrect": {
+      "id": "non_example_incorrect",
+      "type": "message",
+      "message": "Look again — trace where the colored part ends on each bar. The teal bar's colored part goes further than the coral bar's. That means 1/2 is actually more than 1/3!",
+      "next": "non_example_correct"
+    },
+    "non_example_misconception": {
+      "id": "non_example_misconception",
+      "type": "message",
+      "message": "I know 3 is a bigger number than 2, so it might seem like 1/3 would be bigger. But look at the bars! When you split into more pieces, each piece is smaller. So 1 piece out of 3 is actually less than 1 piece out of 2.",
+      "next": "non_example_correct"
+    },
+
+    "assessment_intro": {
+      "id": "assessment_intro",
+      "type": "message",
+      "message": "Nice work so far! Let's see how much you've learned. I'll ask you a few questions — see if you can spot the equivalent fractions!",
+      "next": "quiz_1"
+    },
+    "quiz_1": {
+      "id": "quiz_1",
+      "type": "check",
+      "message": "Which fraction is equivalent to 1/2?",
+      "options": [
+        { "label": "2/3", "next": "quiz_1_wrong", "isCorrect": false },
+        { "label": "3/6", "next": "quiz_1_right", "isCorrect": true },
+        { "label": "1/4", "next": "quiz_1_wrong", "isCorrect": false }
+      ],
+      "correctNext": "quiz_1_right",
+      "correctMessage": "That's right! 3/6 is the same as 1/2.",
+      "incorrectNext": "quiz_1_wrong",
+      "incorrectMessage": "Not quite — let's check with the bars."
+    },
+    "quiz_1_right": {
+      "id": "quiz_1_right",
+      "type": "message",
+      "message": "You got it! 3 out of 6 is the same amount as 1 out of 2. The colored parts would line up perfectly!",
+      "next": "quiz_2",
+      "setup": {
+        "bars": [
+          { "segments": 2, "shaded": 1, "color": "teal" },
+          { "segments": 6, "shaded": 3, "color": "blue" }
+        ]
+      }
+    },
+    "quiz_1_wrong": {
+      "id": "quiz_1_wrong",
+      "type": "message",
+      "message": "Let's check! Look at the bars — see how 1/2 and 3/6 line up? 3 out of 6 pieces is the same amount as 1 out of 2. The answer was 3/6!",
+      "next": "quiz_2",
+      "setup": {
+        "bars": [
+          { "segments": 2, "shaded": 1, "color": "teal" },
+          { "segments": 6, "shaded": 3, "color": "blue" }
+        ]
+      }
+    },
+
+    "quiz_2": {
+      "id": "quiz_2",
+      "type": "check",
+      "message": "Which fraction is equivalent to 2/3?",
+      "options": [
+        { "label": "4/6", "next": "quiz_2_right", "isCorrect": true },
+        { "label": "2/6", "next": "quiz_2_wrong", "isCorrect": false },
+        { "label": "3/4", "next": "quiz_2_wrong", "isCorrect": false }
+      ],
+      "correctNext": "quiz_2_right",
+      "correctMessage": "Yes! 4/6 equals 2/3.",
+      "incorrectNext": "quiz_2_wrong",
+      "incorrectMessage": "Not quite — let me show you."
+    },
+    "quiz_2_right": {
+      "id": "quiz_2_right",
+      "type": "message",
+      "message": "Nailed it! 4 out of 6 is the same as 2 out of 3. You're getting the hang of this!",
+      "next": "quiz_3",
+      "setup": {
+        "bars": [
+          { "segments": 3, "shaded": 2, "color": "coral" },
+          { "segments": 6, "shaded": 4, "color": "purple" }
+        ]
+      }
+    },
+    "quiz_2_wrong": {
+      "id": "quiz_2_wrong",
+      "type": "message",
+      "message": "Let's look at the bars. See — 4 out of 6 lines up with 2 out of 3. Each piece in the top bar equals two pieces in the bottom bar!",
+      "next": "quiz_3",
+      "setup": {
+        "bars": [
+          { "segments": 3, "shaded": 2, "color": "coral" },
+          { "segments": 6, "shaded": 4, "color": "purple" }
+        ]
+      }
+    },
+
+    "quiz_3": {
+      "id": "quiz_3",
+      "type": "check",
+      "message": "Last one! Are 2/4 and 3/4 equivalent fractions?",
+      "options": [
+        { "label": "Yes, they're equal", "next": "quiz_3_wrong", "isCorrect": false },
+        { "label": "No, they're different", "next": "quiz_3_right", "isCorrect": true }
+      ],
+      "correctNext": "quiz_3_right",
+      "correctMessage": "Correct! They have different amounts colored.",
+      "incorrectNext": "quiz_3_wrong",
+      "incorrectMessage": "Not this time — look at the colored parts."
+    },
+    "quiz_3_right": {
+      "id": "quiz_3_right",
+      "type": "message",
+      "message": "Exactly! 2/4 and 3/4 have the same number of pieces, but different amounts colored. They don't line up — so they're not equivalent.",
+      "next": "complete",
+      "setup": {
+        "bars": [
+          { "segments": 4, "shaded": 2, "color": "teal" },
+          { "segments": 4, "shaded": 3, "color": "blue" }
+        ]
+      }
+    },
+    "quiz_3_wrong": {
+      "id": "quiz_3_wrong",
+      "type": "message",
+      "message": "Look at the bars — 2 colored pieces vs 3 colored pieces. They take up different amounts of space, so they're not equivalent. The answer is no!",
+      "next": "complete",
+      "setup": {
+        "bars": [
+          { "segments": 4, "shaded": 2, "color": "teal" },
+          { "segments": 4, "shaded": 3, "color": "blue" }
+        ]
+      }
+    },
+
+    "complete": {
+      "id": "complete",
+      "type": "message",
+      "message": "You did it! You learned that equivalent fractions are different ways to show the same amount. The bars always tell the truth — if the colored parts line up, the fractions are equal. Great job today!"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+.workspace {
+  background: #ffffff;
+  border: 1px solid #e0dfda;
+  border-radius: 12px;
+  padding: 24px 20px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.equivalenceIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0 0;
+  animation: fadeIn 0.5s ease;
+}
+
+.equalsSign {
+  font-size: 20px;
+  font-weight: 500;
+  color: #0F6E56;
+}
+
+.equalsText {
+  font-size: 14px;
+  color: #0F6E56;
+  font-weight: 500;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  color: #888780;
+  font-size: 14px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

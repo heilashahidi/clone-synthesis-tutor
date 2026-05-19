@@ -1,0 +1,48 @@
+.actionBar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c2c2a;
+  background: #ffffff;
+  border: 1px solid #d3d1c7;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.button:hover:not(:disabled) {
+  background: #f1efe8;
+  border-color: #b4b2a9;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.resetButton {
+  margin-left: auto;
+  color: #888780;
+  border-color: #e0dfda;
+}

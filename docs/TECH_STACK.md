@@ -4,18 +4,19 @@
 
 | Layer | Technology | Version | Purpose |
 |-------|-----------|---------|---------|
-| Language | TypeScript | 5.x | Type safety for fraction state, lesson schemas, API contracts |
-| UI Framework | React | 18.x | Component model, state management via useReducer, hooks |
-| Build Tool | Vite | 5.x | Fast HMR during development, optimized production builds |
-| Native Shell | Capacitor | 6.x | Wraps the web app as a native iPad app for App Store distribution |
+| Language | TypeScript | 6.x | Type safety for fraction state, lesson schemas, API contracts |
+| UI Framework | React | 19.x | Component model, state management via useReducer, hooks |
+| Build Tool | Vite | 8.x | Fast HMR during development, optimized production builds |
+| Native Shell | Capacitor | 6.x | Wraps the web app as a native iPad app for App Store distribution (not yet installed — added when deploying to iPad) |
 
 ## UI and Interaction
 
 | Library | Purpose | Why this over alternatives |
 |---------|---------|---------------------------|
-| framer-motion | Split/combine/shade animations, layout transitions | `layoutId` handles the fraction split animation natively — segments redistribute within a flex container and framer interpolates position. CSS transitions can't do layout-driven animation. |
-| @use-gesture/react | Touch gesture recognition (tap, drag, pinch) | Composable gesture hooks that work with framer-motion. Pointer Events API would work for taps but drag-to-combine and pinch-to-split need velocity, direction, and threshold logic that this library handles cleanly. |
+| framer-motion | Split/combine/shade animations, layout transitions | `layoutId` handles the fraction split animation natively — segments redistribute within a flex container and framer interpolates position. Also provides `whileTap` for press feedback. CSS transitions can't do layout-driven animation. |
 | CSS Modules | Scoped component styles | No runtime cost, no class name collisions. Tailwind is viable but the manipulative needs precise pixel control over segment sizing and border placement that utility classes make verbose. |
+
+Note: `@use-gesture/react` is listed in the architecture as a future addition for drag-to-combine and pinch-to-split gestures. The current build uses tap-to-select + button-to-act, which covers the lesson flow without a gesture library. Add it when implementing advanced touch interactions.
 
 ## Tutor and AI
 
@@ -25,7 +26,7 @@
 | LLM (safety net) | Claude Haiku (claude-haiku-4-5-20251001) | Handles edge cases the script can't anticipate: unrecognized manipulative states, misconception classification for unexpected wrong answers, and dynamic second-chance hints. Called only when no scripted branch matches. Sub-second latency, lowest cost in the Claude family. |
 | API Proxy | Cloudflare Worker | Holds the Anthropic API key server-side. Rate limits requests. Adds a 2-second timeout — if the LLM doesn't respond in time, the app falls back to a generic scripted redirect. Single file deployment, no infrastructure to manage. |
 
-## Capacitor Plugins
+## Capacitor Plugins (install when adding iPad deployment)
 
 | Plugin | Purpose |
 |--------|---------|
@@ -37,12 +38,13 @@
 
 ## Development Tooling
 
-| Tool | Purpose |
-|------|---------|
-| ESLint + Prettier | Code formatting and linting. Enforces consistent style across components. |
-| Vitest | Unit tests for the fraction reducer (split, combine, shade logic) and lesson runner (state machine transitions). Fast, Vite-native. |
-| Playwright | End-to-end tests for lesson flow. Simulates tapping segments, choosing responses, and verifying the tutor advances correctly. Runs headless in CI. |
-| Storybook | Visual development of FractionBar and Segment components in isolation. Useful for tuning animations and testing different segment counts without running the full app. |
+| Tool | Status | Purpose |
+|------|--------|---------|
+| ESLint | Installed | Code linting. Enforces consistent style across components. |
+| Prettier | Add later | Code formatting. Pair with ESLint for auto-formatting on save. |
+| Vitest | Add later | Unit tests for the fraction reducer (split, combine, shade logic) and lesson runner (state machine transitions). Fast, Vite-native. |
+| Playwright | Add later | End-to-end tests for lesson flow. Simulates tapping segments, choosing responses, and verifying the tutor advances correctly. Runs headless in CI. |
+| Storybook | Add later | Visual development of FractionBar and Segment components in isolation. Useful for tuning animations and testing different segment counts without running the full app. |
 
 ## Deployment
 
