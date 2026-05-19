@@ -1,16 +1,19 @@
-// ElevenLabs text-to-speech.
-// Fetch synthesized audio from ElevenLabs and play it via an
-// <audio> element. Each new call cancels the previous request and
-// stops the previous audio so the tutor only speaks the latest line.
+// Tutor text-to-speech, routed through the Cloudflare Worker proxy.
+//
+// The browser never sees the ElevenLabs API key — it's a Cloudflare
+// secret on the Worker side. The frontend asks the proxy for audio
+// via `POST /tts`; the proxy talks to ElevenLabs and streams the
+// audio back as audio/mpeg.
 
-const API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined;
-const VOICE_ID =
-  (import.meta.env.VITE_ELEVENLABS_VOICE_ID as string | undefined) ??
-  "NoOVOzCQFLOvtsMoNcdT"; // Lila
+const PROXY_URL = (import.meta.env.VITE_TUTOR_API_URL as string | undefined) ?? "";
 
-// flash is the lowest-latency model; for a short tutor line we don't
-// need the highest-quality multilingual one.
-const MODEL = "eleven_flash_v2_5";
+// Voice id isn't a secret — it's safe to keep as a Vite env var.
+// If unset, the worker falls back to its default.
+const VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID as string | undefined;
+
+let currentAudio: HTMLAudioElement | null = null;
+let currentObjectUrl: string | null = null;
+let abortController: AbortController | null = null;
 
 const NUMBER_WORDS = [
   "zero",
@@ -40,9 +43,9 @@ function numberWord(n: number): string {
 }
 
 /**
- * Rewrite "X/Y" fraction notation into the spoken phrase "X over Y"
- * (e.g., "1/2" -> "one over two") so TTS reads fractions consistently
- * regardless of the model's default pronunciation.
+ * Rewrite "X/Y" fractions to the spoken form "X over Y"
+ * (e.g., "1/2" -> "one over two") so TTS reads fractions
+ * consistently. The chat bubble keeps the compact "1/2" display.
  */
 export function toSpokenFractions(text: string): string {
   return text.replace(/\b(\d+)\/(\d+)\b/g, (_, n: string, d: string) => {
@@ -50,12 +53,8 @@ export function toSpokenFractions(text: string): string {
   });
 }
 
-let currentAudio: HTMLAudioElement | null = null;
-let currentObjectUrl: string | null = null;
-let abortController: AbortController | null = null;
-
 export function isVoiceConfigured(): boolean {
-  return Boolean(API_KEY);
+  return Boolean(PROXY_URL);
 }
 
 export function stop(): void {
@@ -75,7 +74,7 @@ export function stop(): void {
 }
 
 export async function speak(text: string): Promise<void> {
-  if (!API_KEY || !text.trim()) return;
+  if (!PROXY_URL || !text.trim()) return;
 
   stop();
 
@@ -83,32 +82,21 @@ export async function speak(text: string): Promise<void> {
   const signal = abortController.signal;
 
   try {
-    const res = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
-      {
-        method: "POST",
-        headers: {
-          "xi-api-key": API_KEY,
-          "Content-Type": "application/json",
-          accept: "audio/mpeg",
-        },
-        body: JSON.stringify({
-          text: toSpokenFractions(text),
-          model_id: MODEL,
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.75,
-          },
-        }),
-        signal,
-      }
-    );
+    const res = await fetch(`${PROXY_URL}/tts`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        text: toSpokenFractions(text),
+        ...(VOICE_ID ? { voiceId: VOICE_ID } : {}),
+      }),
+      signal,
+    });
 
     if (signal.aborted) return;
 
     if (!res.ok) {
       console.warn(
-        `ElevenLabs TTS failed: ${res.status} ${res.statusText}`
+        `Tutor proxy /tts failed: ${res.status} ${res.statusText}`
       );
       return;
     }
@@ -140,7 +128,7 @@ export async function speak(text: string): Promise<void> {
     }
   } catch (err) {
     if ((err as Error).name !== "AbortError") {
-      console.warn("ElevenLabs TTS error:", err);
+      console.warn("TTS proxy error:", err);
     }
   }
 }
