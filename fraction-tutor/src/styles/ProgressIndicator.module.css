@@ -6,12 +6,18 @@
 }
 
 .title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 500;
-  color: #2c2c2a;
+  color: #fafafa;
+  letter-spacing: -0.01em;
 }
 
 .step {
-  font-size: 16px;
-  color: #888780;
+  font-size: 14px;
+  color: #a1a1aa;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  letter-spacing: 0.02em;
 }

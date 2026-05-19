@@ -1,19 +1,26 @@
 .panel {
-  background: #f7f6f3;
+  width: 360px;
+  flex-shrink: 0;
+  align-self: stretch;
+  background: rgba(24, 24, 27, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
-  padding: 20px 24px;
+  padding: 18px 22px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .messages {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 140px;
   overflow-y: auto;
   scroll-behavior: smooth;
+  min-height: 0;
 }
 
 .bubble {
@@ -33,84 +40,82 @@
 }
 
 .studentBubble .text {
-  background: #E6F1FB;
-  color: #0C447C;
+  background: rgba(96, 165, 250, 0.18);
+  color: #bfdbfe;
   border-radius: 14px 14px 4px 14px;
   padding: 10px 16px;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: #E6F1FB;
+  background: rgba(96, 165, 250, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   font-size: 18px;
-  color: #378ADD;
+  color: #60a5fa;
 }
 
 .text {
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.5;
-  color: #2c2c2a;
+  color: #e4e4e7;
   margin: 0;
-  padding: 6px 0;
+  padding: 4px 0;
 }
 
 .actions {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .optionButton {
-  flex: 1;
-  min-width: 160px;
-  min-height: 64px;
-  padding: 18px 20px;
-  font-size: 17px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 18px;
+  font-size: 16px;
   font-weight: 500;
-  color: #2c2c2a;
-  background: #ffffff;
-  border: 1px solid #d3d1c7;
+  color: #e4e4e7;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid #3f3f46;
   border-radius: 12px;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
 }
 
 .optionButton:hover {
-  background: #f1efe8;
-  border-color: #b4b2a9;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #52525b;
 }
 
 .optionButton:active {
   transform: scale(0.97);
-  background: #e8e7e2;
 }
 
 .continueButton {
   width: 100%;
-  min-height: 64px;
-  padding: 18px 20px;
-  font-size: 17px;
+  min-height: 56px;
+  padding: 14px 18px;
+  font-size: 16px;
   font-weight: 500;
-  color: #378ADD;
-  background: #E6F1FB;
-  border: 1px solid #B5D4F4;
+  color: #93c5fd;
+  background: rgba(96, 165, 250, 0.14);
+  border: 1px solid rgba(96, 165, 250, 0.35);
   border-radius: 12px;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.15s;
+  transition: background-color 0.15s, transform 0.1s;
 }
 
 .continueButton:hover {
-  background: #d4e8f8;
+  background: rgba(96, 165, 250, 0.22);
 }
 
 .continueButton:active {
@@ -120,4 +125,24 @@
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .panel {
+    width: 100%;
+    align-self: auto;
+  }
+  .messages {
+    max-height: 140px;
+    flex: none;
+  }
+  .actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .optionButton {
+    flex: 1;
+    min-width: 160px;
+    width: auto;
+  }
 }

@@ -14,9 +14,15 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  color: #2c2c2a;
-  background: #faf9f7;
+  color: #e4e4e7;
+  background-color: #0a0a0a;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-attachment: fixed;
   overflow-x: hidden;
+  min-height: 100dvh;
 }
 
 button {
@@ -25,12 +31,10 @@ button {
   line-height: inherit;
 }
 
-/* Prevent iOS zoom on input focus */
 input, select, textarea {
   font-size: 16px;
 }
 
-/* Safe area insets for iPad */
 @supports (padding: env(safe-area-inset-top)) {
   body {
     padding-top: env(safe-area-inset-top);

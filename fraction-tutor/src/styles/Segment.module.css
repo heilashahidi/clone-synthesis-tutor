@@ -2,25 +2,51 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 96px;
+  min-height: 100px;
   cursor: pointer;
-  background-color: #f0efea;
+  background-color: rgba(255, 255, 255, 0.04);
   transition: background-color 0.2s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Round the outer corners of the end segments so their fill follows
+   the bar's rounded corners (the bar's overflow is no longer clipped
+   because we need to let pieces drag outside it). */
+.segment:first-child {
+  border-top-left-radius: 13px;
+  border-bottom-left-radius: 13px;
+}
+
+.segment:last-child {
+  border-top-right-radius: 13px;
+  border-bottom-right-radius: 13px;
+}
+
 .segment:active {
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .selected {
-  box-shadow: inset 0 0 0 4px #378ADD;
+  box-shadow: inset 0 0 0 4px #60a5fa;
 }
 
 .label {
   font-size: 22px;
   font-weight: 500;
-  color: #888780;
+  color: #71717a;
   pointer-events: none;
+}
+
+.holding {
+  animation: chargeShatter 0.5s ease-in forwards;
+}
+
+@keyframes chargeShatter {
+  0% {
+    box-shadow: inset 0 0 0 0 rgba(255, 150, 50, 0);
+  }
+  100% {
+    box-shadow: inset 0 0 0 6px rgba(255, 180, 60, 0.9);
+  }
 }

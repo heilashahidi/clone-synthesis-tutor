@@ -35,13 +35,10 @@ export function TutorPanel({
     currentNode.type === "message" &&
     currentNode.next;
 
-  // Only show the last few messages to keep it clean
-  const visibleMessages = messages.slice(-4);
-
   return (
     <div className={styles.panel}>
       <div className={styles.messages} ref={scrollRef}>
-        {visibleMessages.map((msg) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`${styles.bubble} ${

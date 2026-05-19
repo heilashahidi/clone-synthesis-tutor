@@ -67,14 +67,19 @@ export function fractionReducer(
           if (segIndex === -1) return bar;
 
           const target = bar.segments[segIndex];
-          // Split one segment into two, both inherit the shaded state
+          // Split one segment into two, both inherit the shaded state.
+          // Both pieces snap to their home slot (no free-movement offset).
           const newSegments = [...bar.segments];
           newSegments.splice(segIndex, 1, {
             id: target.id, // keep original id for animation
             shaded: target.shaded,
+            x: 0,
+            y: 0,
           }, {
             id: makeSegmentId(),
             shaded: target.shaded,
+            x: 0,
+            y: 0,
           });
 
           return { ...bar, segments: newSegments };
@@ -119,8 +124,11 @@ export function fractionReducer(
           if (current.shaded !== next.shaded) return bar;
 
           const newSegments = [...bar.segments];
-          // Remove the right neighbor, keep the current
+          // Remove the right neighbor, keep the current.
+          // Snap the survivor back to its home slot so it doesn't
+          // remain at the drop point after a drag-combine.
           newSegments.splice(segIndex + 1, 1);
+          newSegments[segIndex] = { ...current, x: 0, y: 0 };
 
           return { ...bar, segments: newSegments };
         }),
@@ -163,6 +171,58 @@ export function fractionReducer(
         ...state,
         selectedBarId: null,
         selectedSegmentId: null,
+      };
+    }
+
+    case "SHATTER": {
+      return {
+        ...state,
+        bars: state.bars.map((bar) => {
+          if (bar.id !== action.barId) return bar;
+
+          const segIndex = bar.segments.findIndex(
+            (s) => s.id === action.segmentId
+          );
+          if (segIndex === -1 || action.count < 2) return bar;
+
+          const target = bar.segments[segIndex];
+          // Keep the original id on the first piece so framer-motion
+          // animates it from the dragged segment's position.
+          // All pieces snap to their home slot.
+          const newPieces: Segment[] = [
+            { id: target.id, shaded: target.shaded, x: 0, y: 0 },
+          ];
+          for (let i = 1; i < action.count; i++) {
+            newPieces.push({
+              id: makeSegmentId(),
+              shaded: target.shaded,
+              x: 0,
+              y: 0,
+            });
+          }
+
+          const newSegments = [...bar.segments];
+          newSegments.splice(segIndex, 1, ...newPieces);
+
+          return { ...bar, segments: newSegments };
+        }),
+      };
+    }
+
+    case "MOVE_SEGMENT": {
+      return {
+        ...state,
+        bars: state.bars.map((bar) => {
+          if (bar.id !== action.barId) return bar;
+          return {
+            ...bar,
+            segments: bar.segments.map((seg) =>
+              seg.id === action.segmentId
+                ? { ...seg, x: action.x, y: action.y }
+                : seg
+            ),
+          };
+        }),
       };
     }
 

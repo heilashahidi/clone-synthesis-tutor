@@ -7,16 +7,22 @@ type FractionWorkspaceProps = {
   bars: FractionBarType[];
   selectedSegmentId: string | null;
   onSegmentTap: (barId: string, segmentId: string) => void;
-  onSegmentSplit: (barId: string, segmentId: string) => void;
-  onSegmentCombine: (barId: string, segmentId: string) => void;
+  onSegmentSmash: (barId: string, segmentId: string) => void;
+  onSegmentDragEnd: (
+    barId: string,
+    segmentId: string,
+    x: number,
+    y: number,
+    dropTargetId: string | null
+  ) => void;
 };
 
 export function FractionWorkspace({
   bars,
   selectedSegmentId,
   onSegmentTap,
-  onSegmentSplit,
-  onSegmentCombine,
+  onSegmentSmash,
+  onSegmentDragEnd,
 }: FractionWorkspaceProps) {
   const areEquivalent =
     bars.length >= 2 &&
@@ -32,8 +38,8 @@ export function FractionWorkspace({
           bar={bar}
           selectedSegmentId={selectedSegmentId}
           onSegmentTap={onSegmentTap}
-          onSegmentSplit={onSegmentSplit}
-          onSegmentCombine={onSegmentCombine}
+          onSegmentSmash={onSegmentSmash}
+          onSegmentDragEnd={onSegmentDragEnd}
         />
       ))}
       {areEquivalent && (

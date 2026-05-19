@@ -2,7 +2,12 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 0;
+  padding: 16px;
+  background: rgba(20, 20, 22, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .button {
@@ -10,23 +15,23 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 16px 28px;
-  font-size: 17px;
+  padding: 14px 26px;
+  font-size: 16px;
   font-weight: 500;
-  color: #2c2c2a;
-  background: #ffffff;
-  border: 1px solid #d3d1c7;
-  border-radius: 10px;
+  color: #e4e4e7;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid #3f3f46;
+  border-radius: 12px;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.15s, border-color 0.15s;
-  min-height: 56px;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+  min-height: 52px;
 }
 
 .button:hover:not(:disabled) {
-  background: #f1efe8;
-  border-color: #b4b2a9;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #52525b;
 }
 
 .button:active:not(:disabled) {
@@ -34,7 +39,7 @@
 }
 
 .button:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: default;
 }
 
@@ -45,6 +50,6 @@
 
 .resetButton {
   margin-left: auto;
-  color: #888780;
-  border-color: #e0dfda;
+  color: #a1a1aa;
+  border-color: rgba(255, 255, 255, 0.06);
 }

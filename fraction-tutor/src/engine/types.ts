@@ -5,6 +5,10 @@ export type BarColor = "teal" | "blue" | "coral" | "purple";
 export type Segment = {
   id: string;
   shaded: boolean;
+  // Free-movement offset from the segment's home flex slot, in px.
+  // Undefined / 0 means the segment is sitting in its bar slot.
+  x?: number;
+  y?: number;
 };
 
 export type FractionBar = {
@@ -29,7 +33,15 @@ export type ManipulativeAction =
   | { type: "RESET" }
   | { type: "SET_STATE"; bars: FractionBar[] }
   | { type: "SELECT"; barId: string; segmentId: string }
-  | { type: "DESELECT" };
+  | { type: "DESELECT" }
+  | { type: "SHATTER"; barId: string; segmentId: string; count: number }
+  | {
+      type: "MOVE_SEGMENT";
+      barId: string;
+      segmentId: string;
+      x: number;
+      y: number;
+    };
 
 // ── Derived Fraction ────────────────────────────────────────────────
 

@@ -22,41 +22,68 @@ export function LessonShell({ lesson }: LessonShellProps) {
       dispatch,
     });
 
-  // Handle segment tap: select/deselect or shade depending on context
+  // Tap a segment: select/deselect or shade depending on context
   const handleSegmentTap = useCallback(
     (barId: string, segmentId: string) => {
       if (
         manipState.selectedBarId === barId &&
         manipState.selectedSegmentId === segmentId
       ) {
-        // Tap same segment = toggle shade
         dispatch({ type: "SHADE", barId, segmentId });
       } else {
-        // Tap new segment = select it
         dispatch({ type: "SELECT", barId, segmentId });
       }
     },
     [manipState.selectedBarId, manipState.selectedSegmentId]
   );
 
-  // Drag-down on a segment splits it in place
-  const handleSegmentSplit = useCallback(
+  // Long-press a segment: shatter into 4 equal pieces (all snap home)
+  const handleSegmentSmash = useCallback(
     (barId: string, segmentId: string) => {
-      dispatch({ type: "SPLIT", barId, segmentId });
+      dispatch({ type: "SHATTER", barId, segmentId, count: 4 });
       dispatch({ type: "DESELECT" });
     },
     []
   );
 
-  // Drag-horizontal on a segment merges it with a neighbor.
-  // The caller supplies the segmentId whose right neighbor should be absorbed
-  // (so drag-right passes the dragged segment; drag-left passes its left neighbor).
-  const handleSegmentCombine = useCallback(
-    (barId: string, segmentId: string) => {
-      dispatch({ type: "COMBINE", barId, segmentId });
-      dispatch({ type: "DESELECT" });
+  // Drag end: if dropped on an adjacent same-bar same-shade neighbor,
+  // combine; otherwise save the new free-floating position.
+  const handleSegmentDragEnd = useCallback(
+    (
+      barId: string,
+      segmentId: string,
+      x: number,
+      y: number,
+      dropTargetId: string | null
+    ) => {
+      if (dropTargetId) {
+        const sourceBar = manipState.bars.find((b) => b.id === barId);
+        const sourceIdx =
+          sourceBar?.segments.findIndex((s) => s.id === segmentId) ?? -1;
+        let targetIdx = -1;
+        let targetBarId: string | null = null;
+        for (const bar of manipState.bars) {
+          const ti = bar.segments.findIndex((s) => s.id === dropTargetId);
+          if (ti !== -1) {
+            targetIdx = ti;
+            targetBarId = bar.id;
+            break;
+          }
+        }
+        if (
+          targetBarId === barId &&
+          sourceIdx >= 0 &&
+          Math.abs(sourceIdx - targetIdx) === 1
+        ) {
+          const leftIdx = Math.min(sourceIdx, targetIdx);
+          const leftId = sourceBar!.segments[leftIdx].id;
+          dispatch({ type: "COMBINE", barId, segmentId: leftId });
+          return;
+        }
+      }
+      dispatch({ type: "MOVE_SEGMENT", barId, segmentId, x, y });
     },
-    []
+    [manipState.bars]
   );
 
   const handleSplit = useCallback(() => {
@@ -110,30 +137,34 @@ export function LessonShell({ lesson }: LessonShellProps) {
         isComplete={lessonState.isComplete}
       />
 
-      <FractionWorkspace
-        bars={manipState.bars}
-        selectedSegmentId={manipState.selectedSegmentId}
-        onSegmentTap={handleSegmentTap}
-        onSegmentSplit={handleSegmentSplit}
-        onSegmentCombine={handleSegmentCombine}
-      />
+      <div className={styles.body}>
+        <div className={styles.canvas}>
+          <FractionWorkspace
+            bars={manipState.bars}
+            selectedSegmentId={manipState.selectedSegmentId}
+            onSegmentTap={handleSegmentTap}
+            onSegmentSmash={handleSegmentSmash}
+            onSegmentDragEnd={handleSegmentDragEnd}
+          />
 
-      {!lessonState.isComplete && (
-        <ActionBar
-          hasSelection={!!manipState.selectedSegmentId}
-          onSplit={handleSplit}
-          onCombine={handleCombine}
-          onShade={handleShade}
-          onReset={handleReset}
+          {!lessonState.isComplete && (
+            <ActionBar
+              hasSelection={!!manipState.selectedSegmentId}
+              onSplit={handleSplit}
+              onCombine={handleCombine}
+              onShade={handleShade}
+              onReset={handleReset}
+            />
+          )}
+        </div>
+
+        <TutorPanel
+          messages={lessonState.messages}
+          currentNode={currentNode}
+          onOptionSelect={selectOption}
+          onAdvance={advance}
         />
-      )}
-
-      <TutorPanel
-        messages={lessonState.messages}
-        currentNode={currentNode}
-        onOptionSelect={selectOption}
-        onAdvance={advance}
-      />
+      </div>
     </div>
   );
 }
