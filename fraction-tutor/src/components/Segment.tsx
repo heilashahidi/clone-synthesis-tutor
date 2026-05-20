@@ -199,7 +199,6 @@ export function Segment({
         flex: 1,
         zIndex: isElevated ? 5 : 1,
         backgroundColor: shaded ? colors.shaded : undefined,
-        borderLeft: index > 0 ? "2px solid var(--border-color)" : "none",
       }}
       onTapStart={handleTapStart}
       onTap={handleTap}
@@ -209,12 +208,15 @@ export function Segment({
       className={`${styles.segment} ${isSelected ? styles.selected : ""} ${
         isHolding ? styles.holding : ""
       }`}
-      whileTap={{ scale: 0.96 }}
+      whileTap={{ scale: 0.97 }}
       whileDrag={{
-        scale: 1.08,
+        // No outward scale — the dragged piece used to grow 8% which
+        // pushed it past the bar's rounded boundary. A small lift +
+        // tight shadow communicates "I picked this up" without the
+        // visual spill.
+        y: -4,
         zIndex: 10,
-        boxShadow:
-          "0 0 24px rgba(96, 165, 250, 0.25), 0 16px 40px rgba(0, 0, 0, 0.8)",
+        boxShadow: "0 8px 18px rgba(0, 0, 0, 0.55)",
       }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
     >

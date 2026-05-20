@@ -1,13 +1,32 @@
 .segment {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100px;
+  /* Fill the bar's interior exactly — the bar is height: 100px with
+     a 1px border (border-box), so the interior is 98px. Using a fixed
+     min-height like 100px would push each segment 2px past the bar's
+     rounded edge. */
+  height: 100%;
   cursor: pointer;
   background-color: rgba(255, 255, 255, 0.04);
   transition: background-color 0.2s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Divider between segments as a pseudo-element strip — no border, no
+   width asymmetry. Every segment ends up with identical box geometry,
+   so the labels line up at the exact same x within each slot. */
+.segment:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-color);
+  pointer-events: none;
 }
 
 /* Round the outer corners of the end segments so their fill follows
