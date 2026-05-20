@@ -63,24 +63,18 @@
       "id": "define_2",
       "type": "message",
       "message": "1/2 and 2/4 are equivalent fractions. Different numbers, same amount colored. Let's find out how that works!",
-      "next": "shade_teach"
+      "next": "shade_wait"
     },
 
-    "shade_teach": {
-      "id": "shade_teach",
-      "type": "message",
+    "shade_wait": {
+      "id": "shade_wait",
+      "type": "wait_for_action",
       "message": "Here is one whole bar with nothing colored yet. Tap it to color it in!",
-      "next": "shade_wait",
       "setup": {
         "bars": [
           { "segments": 1, "shaded": 0, "color": "teal" }
         ]
-      }
-    },
-    "shade_wait": {
-      "id": "shade_wait",
-      "type": "wait_for_action",
-      "message": "Go ahead and tap the bar to color it.",
+      },
       "condition": {
         "type": "fraction_equals",
         "barIndex": 0,
@@ -154,25 +148,19 @@
       "id": "build_bridge",
       "type": "message",
       "message": "Here is the big idea. If we cut a bar into more pieces, we can find a new fraction that shows the same amount!",
-      "next": "split_teach"
+      "next": "split_wait"
     },
 
-    "split_teach": {
-      "id": "split_teach",
-      "type": "message",
-      "message": "I added a second bar below. You can cut a piece by tapping it two times quickly. Try it on the blue bar!",
-      "next": "split_wait",
+    "split_wait": {
+      "id": "split_wait",
+      "type": "wait_for_action",
+      "message": "I added a blue bar below. You can cut a piece by tapping it two times quickly. Try it on the blue bar!",
       "setup": {
         "bars": [
           { "segments": 2, "shaded": 1, "color": "teal" },
           { "segments": 1, "shaded": 0, "color": "blue" }
         ]
-      }
-    },
-    "split_wait": {
-      "id": "split_wait",
-      "type": "wait_for_action",
-      "message": "Double-tap a piece in the blue bar to cut it in half.",
+      },
       "condition": {
         "type": "action_performed",
         "action": "SPLIT"

@@ -104,15 +104,30 @@
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.15s, transform 0.1s;
+  /* Default state is "not ready yet" — the button is mounted (so the
+     layout stays put while Lila finishes talking) but invisible and
+     untappable. .continueButtonReady fades it in. */
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    background-color 0.15s ease;
 }
 
-.continueButton:hover {
+.continueButtonReady {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.continueButtonReady:hover {
   background: rgba(96, 165, 250, 0.22);
 }
 
-.continueButton:active {
-  transform: scale(0.98);
+.continueButtonReady:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .skipLink {

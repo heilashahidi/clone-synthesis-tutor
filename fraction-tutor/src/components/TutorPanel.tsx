@@ -22,15 +22,17 @@ export function TutorPanel({
     currentNode.options &&
     currentNode.options.length > 0;
 
-  // Hold the Continue button until Lila has finished speaking the
-  // current line, so kids hear the full sentence before they can rush
-  // past it. (Muted / autoplay-blocked / proxy-off all leave
+  // Reserve space for the Continue button as soon as we're on a
+  // message node, even while Lila is still talking. The button stays
+  // mounted but invisible and disabled until `isSpeaking` flips
+  // false — this way there's no layout shift, just a smooth fade-in
+  // when she's done. (Muted / autoplay-blocked / proxy-off all leave
   // `isSpeaking` false, so it never strands the UI.)
-  const showContinue =
+  const hasContinue =
     currentNode &&
     currentNode.type === "message" &&
-    currentNode.next &&
-    !isSpeaking;
+    Boolean(currentNode.next);
+  const continueReady = hasContinue && !isSpeaking;
 
   // Show only the latest tutor message — no chat history, no student
   // echoes. The student's "answer" is whichever option button they tap.
@@ -66,8 +68,15 @@ export function TutorPanel({
             </button>
           ))}
 
-        {showContinue && (
-          <button className={styles.continueButton} onClick={onAdvance}>
+        {hasContinue && (
+          <button
+            className={`${styles.continueButton} ${
+              continueReady ? styles.continueButtonReady : ""
+            }`}
+            onClick={onAdvance}
+            disabled={!continueReady}
+            aria-hidden={!continueReady}
+          >
             Continue →
           </button>
         )}
