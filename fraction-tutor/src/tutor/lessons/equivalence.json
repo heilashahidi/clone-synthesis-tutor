@@ -54,43 +54,14 @@
     "define_2": {
       "id": "define_2",
       "type": "message",
-      "message": "1/2 and 2/4 are equivalent. Different numbers, same amount colored.",
-      "next": "why_1"
-    },
-
-    "why_1": {
-      "id": "why_1",
-      "type": "message",
-      "message": "Why does this matter? Imagine you're baking and need 1/2 a cup of sugar — but you only have a 1/4 cup.",
-      "next": "why_2"
-    },
-    "why_2": {
-      "id": "why_2",
-      "type": "prompt",
-      "message": "How many 1/4 cups would you need to make 1/2?",
-      "options": [
-        { "label": "Two!", "next": "why_confirm", "isCorrect": true },
-        { "label": "One?", "next": "why_hint" },
-        { "label": "Not sure", "next": "why_hint" }
-      ]
-    },
-    "why_confirm": {
-      "id": "why_confirm",
-      "type": "message",
-      "message": "Two 1/4 cups equals 1/2 cup. You just used equivalent fractions! Now let's learn how to find them.",
+      "message": "1/2 and 2/4 are equivalent. Different numbers, same amount colored. Let's learn how to find them!",
       "next": "shade_teach"
-    },
-    "why_hint": {
-      "id": "why_hint",
-      "type": "message",
-      "message": "Look at the bars — 2 out of 4 pieces equals 1 out of 2. So two 1/4 cups makes 1/2 cup!",
-      "next": "why_confirm"
     },
 
     "shade_teach": {
       "id": "shade_teach",
       "type": "message",
-      "message": "Let's start fresh. Here's one whole bar. Tap it to color it in!",
+      "message": "Here's one whole bar. Tap it to color it in!",
       "next": "shade_wait",
       "setup": {
         "bars": [
@@ -122,7 +93,7 @@
     "cut_intro": {
       "id": "cut_intro",
       "type": "message",
-      "message": "Now watch what happens when I cut it into 2 equal pieces.",
+      "message": "Now watch — I'm cutting it into 2 equal pieces.",
       "next": "cut_reveal",
       "setup": {
         "bars": [
@@ -133,7 +104,7 @@
     "cut_reveal": {
       "id": "cut_reveal",
       "type": "prompt",
-      "message": "I cut it but didn't change how much is colored. 1 out of 2 pieces — that's 1/2. Make sense?",
+      "message": "Same amount is colored, but now there are 2 pieces. 1 out of 2 is colored — that's 1/2. Make sense?",
       "options": [
         { "label": "Got it!", "next": "cut_confirm" },
         { "label": "I think so", "next": "cut_confirm" },
@@ -143,20 +114,20 @@
     "cut_explain": {
       "id": "cut_explain",
       "type": "message",
-      "message": "The bar has 2 pieces now. 1 is colored. That's 1 out of 2 — we write it as 1/2!",
+      "message": "Count the pieces — there are 2. Count the colored ones — there's 1. That's 1 out of 2, or 1/2!",
       "next": "cut_confirm"
     },
     "cut_confirm": {
       "id": "cut_confirm",
       "type": "message",
-      "message": "Here's the secret: when you cut a bar into more pieces, you can find a new fraction that means the same thing.",
+      "message": "When you cut a bar into more pieces, you can find a new fraction that means the same thing. Let's try it!",
       "next": "split_teach"
     },
 
     "split_teach": {
       "id": "split_teach",
       "type": "message",
-      "message": "Your turn! Here's a second bar below. Tap a piece twice quickly to cut it in half.",
+      "message": "I added a second bar below. Tap a piece in it two times quickly to cut it in half.",
       "next": "split_wait",
       "setup": {
         "bars": [
@@ -168,20 +139,20 @@
     "split_wait": {
       "id": "split_wait",
       "type": "wait_for_action",
-      "message": "Double-tap a piece in the blue bar to cut it!",
+      "message": "Double-tap a piece in the blue bar to cut it.",
       "condition": {
         "type": "action_performed",
         "action": "SPLIT"
       },
       "onMet": "split_confirm",
-      "hint": "Tap the same piece two times quickly.",
+      "hint": "Tap the same piece two times quickly!",
       "hintDelay": 10,
       "allowedActions": ["SPLIT"]
     },
     "split_confirm": {
       "id": "split_confirm",
       "type": "message",
-      "message": "You cut it! See how one piece became two? Now keep cutting until you have 4 pieces, then color 2 of them.",
+      "message": "You cut it! One piece became two. Keep cutting until you have 4 pieces, then tap 2 of them to color them.",
       "next": "equiv_wait_1"
     },
 
@@ -195,7 +166,7 @@
         "target": { "numerator": 2, "denominator": 4 }
       },
       "onMet": "equiv_reveal_1",
-      "hint": "Cut pieces until you have 4, then tap 2 of them to color.",
+      "hint": "Double-tap pieces to cut them. Single-tap to color them.",
       "hintDelay": 15,
       "llmFallthrough": true,
       "allowedActions": ["SPLIT", "SHADE", "COMBINE"]
@@ -203,7 +174,7 @@
     "equiv_reveal_1": {
       "id": "equiv_reveal_1",
       "type": "message",
-      "message": "Look at that — the colored parts on both bars end at the same spot!",
+      "message": "Look — the colored parts on both bars end at the same spot!",
       "next": "equiv_question_1"
     },
     "equiv_question_1": {
@@ -225,7 +196,7 @@
     "equiv_misconception_1": {
       "id": "equiv_misconception_1",
       "type": "message",
-      "message": "The numbers are bigger, but look at the bars. The colored parts are the same size. More pieces just means smaller pieces!",
+      "message": "The numbers are bigger, but look at the bars. The colored parts are the same size! More pieces just means smaller pieces.",
       "next": "equiv_confirm_1"
     },
     "equiv_hint_1": {
@@ -238,7 +209,7 @@
     "challenge_2_setup": {
       "id": "challenge_2_setup",
       "type": "message",
-      "message": "Let's try a harder one. The top bar shows 2/3. Can you make the bottom bar equivalent?",
+      "message": "Let's try a harder one. The top bar shows 2/3. Can you make the bottom bar match it?",
       "next": "challenge_2_wait",
       "setup": {
         "bars": [
@@ -257,7 +228,7 @@
         "target": { "numerator": 2, "denominator": 3 }
       },
       "onMet": "challenge_2_reveal",
-      "hint": "Try making 6 pieces and coloring 4. See if it lines up!",
+      "hint": "Try cutting into 6 pieces and coloring 4. See if the colored parts line up!",
       "hintDelay": 20,
       "llmFallthrough": true,
       "allowedActions": ["SPLIT", "SHADE", "COMBINE"]
@@ -271,9 +242,9 @@
     "pattern_question": {
       "id": "pattern_question",
       "type": "prompt",
-      "message": "We keep cutting into more pieces but the colored amount stays the same. Why does that work?",
+      "message": "We keep cutting bars into more pieces but the colored amount stays the same. Why does that work?",
       "options": [
-        { "label": "More pieces means smaller pieces", "next": "pattern_confirm", "isCorrect": true },
+        { "label": "More pieces means each piece is smaller", "next": "pattern_confirm", "isCorrect": true },
         { "label": "The numbers just get bigger", "next": "pattern_redirect" },
         { "label": "Not sure yet", "next": "pattern_explain" }
       ]
@@ -281,26 +252,26 @@
     "pattern_confirm": {
       "id": "pattern_confirm",
       "type": "message",
-      "message": "That's the secret! When you cut into more pieces, each piece gets smaller — but you color more of them. It balances out.",
+      "message": "That's the secret! Cutting makes smaller pieces — but you color more of them. It balances out.",
       "next": "non_example_setup"
     },
     "pattern_redirect": {
       "id": "pattern_redirect",
       "type": "message",
-      "message": "The numbers do change. But the colored part doesn't! More pieces, smaller pieces, more of them colored — it evens out.",
+      "message": "The numbers change, but the colored part doesn't! More pieces, smaller pieces, more of them colored — it evens out.",
       "next": "pattern_confirm"
     },
     "pattern_explain": {
       "id": "pattern_explain",
       "type": "message",
-      "message": "Think of cutting a pizza slice in half. You have more pieces, but the same amount of pizza! That's what happens here.",
+      "message": "Look at the bars. The top bar has big pieces. The bottom has small pieces. But the colored parts are the same length!",
       "next": "non_example_setup"
     },
 
     "non_example_setup": {
       "id": "non_example_setup",
       "type": "message",
-      "message": "But not all fractions are equivalent. Let's check — is 1/2 the same as 1/3?",
+      "message": "But not all fractions are equivalent. Look at these two bars.",
       "next": "non_example_question",
       "setup": {
         "bars": [
@@ -312,17 +283,17 @@
     "non_example_question": {
       "id": "non_example_question",
       "type": "prompt",
-      "message": "Look at where the color ends on each bar. Same spot or different?",
+      "message": "Do the colored parts end at the same spot?",
       "options": [
-        { "label": "Different — 1/2 is bigger!", "next": "non_example_correct", "isCorrect": true },
-        { "label": "Looks the same?", "next": "non_example_wrong" },
+        { "label": "No — 1/2 is bigger!", "next": "non_example_correct", "isCorrect": true },
+        { "label": "They look the same?", "next": "non_example_wrong" },
         { "label": "1/3 is bigger?", "next": "non_example_misconception" }
       ]
     },
     "non_example_correct": {
       "id": "non_example_correct",
       "type": "message",
-      "message": "Right! The colors don't line up, so they're not equivalent. The bars always tell the truth.",
+      "message": "Right! The colored parts don't line up — so 1/2 and 1/3 are not equivalent.",
       "next": "non_example_why"
     },
     "non_example_wrong": {
@@ -334,13 +305,13 @@
     "non_example_misconception": {
       "id": "non_example_misconception",
       "type": "message",
-      "message": "3 is a bigger number, but more pieces means each piece is smaller. 1 out of 3 is less than 1 out of 2!",
+      "message": "3 is a bigger number, but more pieces means each piece is smaller. 1 out of 3 is actually less than 1 out of 2!",
       "next": "non_example_correct"
     },
     "non_example_why": {
       "id": "non_example_why",
       "type": "message",
-      "message": "We didn't just cut into more pieces here — we also changed how many are colored. That's why they're not equivalent.",
+      "message": "These bars have different numbers of pieces and different amounts colored. That's why they don't match.",
       "next": "assessment_intro"
     },
 
@@ -402,7 +373,7 @@
       "correctNext": "quiz_2_right",
       "correctMessage": "Yes! 4/6 equals 2/3.",
       "incorrectNext": "quiz_2_wrong",
-      "incorrectMessage": "Let's look."
+      "incorrectMessage": "Let's look at the bars."
     },
     "quiz_2_right": {
       "id": "quiz_2_right",
@@ -419,7 +390,7 @@
     "quiz_2_wrong": {
       "id": "quiz_2_wrong",
       "type": "message",
-      "message": "See — 4/6 lines up with 2/3. Cut each piece in half and you get the same amount colored!",
+      "message": "See — 4/6 lines up with 2/3. Each piece on top equals two pieces on the bottom!",
       "next": "quiz_3",
       "setup": {
         "bars": [
@@ -470,7 +441,7 @@
     "complete": {
       "id": "complete",
       "type": "message",
-      "message": "You did it! Remember — if the colored parts line up, the fractions are equivalent. You're a fraction explorer now!"
+      "message": "You did it! Remember — if the colored parts line up, the fractions are equivalent. Great job today!"
     }
   }
 }

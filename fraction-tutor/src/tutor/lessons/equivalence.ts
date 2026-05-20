@@ -14,13 +14,8 @@ export const equivalenceLesson = json as Lesson;
 export const equivalenceTotalSteps = 7;
 
 export function equivalenceStep(nodeId: string): number {
-  // 1 — opening hook, definition, "why does this matter" motivation
-  if (
-    nodeId.startsWith("hook_") ||
-    nodeId.startsWith("define_") ||
-    nodeId.startsWith("why_")
-  )
-    return 1;
+  // 1 — opening hook + definition
+  if (nodeId.startsWith("hook_") || nodeId.startsWith("define_")) return 1;
   // 2 — basic mechanics: color a whole, then watch a cut
   if (nodeId.startsWith("shade_") || nodeId.startsWith("cut_")) return 2;
   // 3 — first equivalence challenge (split + make 2/4)
