@@ -4,6 +4,7 @@ import styles from "../styles/TutorPanel.module.css";
 type TutorPanelProps = {
   messages: TutorMessage[];
   currentNode: LessonNode | undefined;
+  isSpeaking: boolean;
   onOptionSelect: (index: number) => void;
   onAdvance: () => void;
 };
@@ -11,6 +12,7 @@ type TutorPanelProps = {
 export function TutorPanel({
   messages,
   currentNode,
+  isSpeaking,
   onOptionSelect,
   onAdvance,
 }: TutorPanelProps) {
@@ -20,10 +22,15 @@ export function TutorPanel({
     currentNode.options &&
     currentNode.options.length > 0;
 
+  // Hold the Continue button until Lila has finished speaking the
+  // current line, so kids hear the full sentence before they can rush
+  // past it. (Muted / autoplay-blocked / proxy-off all leave
+  // `isSpeaking` false, so it never strands the UI.)
   const showContinue =
     currentNode &&
     currentNode.type === "message" &&
-    currentNode.next;
+    currentNode.next &&
+    !isSpeaking;
 
   // Show only the latest tutor message — no chat history, no student
   // echoes. The student's "answer" is whichever option button they tap.

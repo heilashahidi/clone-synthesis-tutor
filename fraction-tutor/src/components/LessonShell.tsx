@@ -45,8 +45,10 @@ export function LessonShell({
   });
 
   // Speak each new tutor line through ElevenLabs (no-op without API key).
+  // `isSpeaking` is true while Lila is mid-sentence so we can hold the
+  // Continue button until she finishes.
   const [muted, setMuted] = useState(false);
-  useTutorVoice(lessonState.messages, muted);
+  const { isSpeaking } = useTutorVoice(lessonState.messages, muted);
 
   // Compute which gestures the student is allowed to use on the
   // current node. `null` = no restriction (e.g., dev/demo nodes
@@ -184,6 +186,7 @@ export function LessonShell({
         <TutorPanel
           messages={lessonState.messages}
           currentNode={currentNode}
+          isSpeaking={isSpeaking}
           onOptionSelect={selectOption}
           onAdvance={advance}
         />
