@@ -73,14 +73,14 @@
     "build_half_confirm": {
       "id": "build_half_confirm",
       "type": "message",
-      "message": "Good — the top bar shows 1/2. Now here's the big question…",
+      "message": "Good — the top bar shows 1/2. Here's the big question: can two different fractions mean the same amount?",
       "next": "equiv_challenge_1"
     },
 
     "equiv_challenge_1": {
       "id": "equiv_challenge_1",
       "type": "message",
-      "message": "Here's a second bar. Can you make it show 2/4?",
+      "message": "Let's find out. Here's a second bar — can you make it show 2/4?",
       "next": "equiv_wait_1",
       "setup": {
         "bars": [
