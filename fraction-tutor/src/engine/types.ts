@@ -17,8 +17,19 @@ export type FractionBar = {
   color: BarColor;
 };
 
+// Circles are read-only visuals — no gestures, no contiguity rules.
+// `shaded` is the count of wedges colored in, starting from the top
+// (12 o'clock) and going clockwise.
+export type FractionCircle = {
+  id: string;
+  slices: number;
+  shaded: number;
+  color: BarColor;
+};
+
 export type ManipulativeState = {
   bars: FractionBar[];
+  circles: FractionCircle[];
   selectedBarId: string | null;
   selectedSegmentId: string | null;
 };
@@ -31,7 +42,7 @@ export type ManipulativeAction =
   | { type: "COMBINE"; barId: string; segmentId: string }
   | { type: "ADD_BAR"; color: BarColor }
   | { type: "RESET" }
-  | { type: "SET_STATE"; bars: FractionBar[] }
+  | { type: "SET_STATE"; bars: FractionBar[]; circles: FractionCircle[] }
   | { type: "SELECT"; barId: string; segmentId: string }
   | { type: "DESELECT" }
   | { type: "SHATTER"; barId: string; segmentId: string; count: number }
@@ -110,10 +121,16 @@ export type LessonNode = {
   // gestures (the only way forward is the Continue / option buttons).
   allowedActions?: TutorialActionTrigger[];
 
-  // Setup: configure the manipulative at this step
+  // Setup: configure the manipulative at this step. A node sets up
+  // bars, circles, or both — whichever it doesn't list is cleared.
   setup?: {
-    bars: Array<{
+    bars?: Array<{
       segments: number;
+      shaded: number;
+      color: BarColor;
+    }>;
+    circles?: Array<{
+      slices: number;
       shaded: number;
       color: BarColor;
     }>;

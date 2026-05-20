@@ -1,12 +1,17 @@
 import { useRef } from "react";
 import { FractionBar } from "./FractionBar";
-import type { FractionBar as FractionBarType } from "../engine/types";
+import { FractionCircle } from "./FractionCircle";
+import type {
+  FractionBar as FractionBarType,
+  FractionCircle as FractionCircleType,
+} from "../engine/types";
 import styles from "../styles/FractionWorkspace.module.css";
 
 const DOUBLE_CLICK_MS = 320;
 
 type FractionWorkspaceProps = {
   bars: FractionBarType[];
+  circles: FractionCircleType[];
   selectedSegmentId: string | null;
   onSegmentTap: (barId: string, segmentId: string) => void;
   onSegmentDoubleTap: (barId: string, segmentId: string) => void;
@@ -23,6 +28,7 @@ type FractionWorkspaceProps = {
 
 export function FractionWorkspace({
   bars,
+  circles,
   selectedSegmentId,
   onSegmentTap,
   onSegmentDoubleTap,
@@ -68,7 +74,14 @@ export function FractionWorkspace({
           onSegmentDragEnd={onSegmentDragEnd}
         />
       ))}
-      {bars.length === 0 && (
+      {circles.length > 0 && (
+        <div className={styles.circleRow}>
+          {circles.map((c) => (
+            <FractionCircle key={c.id} circle={c} />
+          ))}
+        </div>
+      )}
+      {bars.length === 0 && circles.length === 0 && (
         <div className={styles.empty}>
           Double-tap anywhere to add a bar
         </div>

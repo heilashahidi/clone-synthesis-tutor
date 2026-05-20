@@ -30,6 +30,15 @@
   letter-spacing: 0.02em;
 }
 
+.circleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+  padding: 8px 0;
+}
+
 .empty {
   display: flex;
   align-items: center;

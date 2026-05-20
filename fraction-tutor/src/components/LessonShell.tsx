@@ -171,6 +171,7 @@ export function LessonShell({
         <div className={styles.canvas}>
           <FractionWorkspace
             bars={manipState.bars}
+            circles={manipState.circles}
             selectedSegmentId={manipState.selectedSegmentId}
             onSegmentTap={handleSegmentTap}
             onSegmentDoubleTap={handleSegmentDoubleTap}

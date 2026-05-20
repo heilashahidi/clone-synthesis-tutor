@@ -9,7 +9,7 @@ import type {
   TutorialActionTrigger,
 } from "../engine/types";
 import { checkCondition } from "../engine/conditions";
-import { createBar, resetCounters } from "../engine/fractionReducer";
+import { createBar, createCircle, resetCounters } from "../engine/fractionReducer";
 import { handleUnrecognizedState } from "./llmSafetyNet";
 import { isLlmConfigured } from "./tutorApi";
 
@@ -74,10 +74,13 @@ export function useLessonRunner({
 
       if (node.setup) {
         resetCounters();
-        const newBars = node.setup.bars.map((b) =>
+        const newBars = (node.setup.bars ?? []).map((b) =>
           createBar(b.segments, b.shaded, b.color)
         );
-        dispatch({ type: "SET_STATE", bars: newBars });
+        const newCircles = (node.setup.circles ?? []).map((c) =>
+          createCircle(c.slices, c.shaded, c.color)
+        );
+        dispatch({ type: "SET_STATE", bars: newBars, circles: newCircles });
       }
 
       setState((prev) => ({

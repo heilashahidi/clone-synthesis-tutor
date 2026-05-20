@@ -2,6 +2,7 @@ import type {
   ManipulativeState,
   ManipulativeAction,
   FractionBar,
+  FractionCircle,
   Segment,
   BarColor,
 } from "./types";
@@ -20,9 +21,16 @@ export function makeBarId(): string {
   return `bar-${++barCounter}`;
 }
 
+let circleCounter = 0;
+
+export function makeCircleId(): string {
+  return `circle-${++circleCounter}`;
+}
+
 export function resetCounters(): void {
   segmentCounter = 0;
   barCounter = 0;
+  circleCounter = 0;
 }
 
 function createBar(
@@ -40,10 +48,19 @@ function createBar(
   return { id: makeBarId(), segments, color };
 }
 
+function createCircle(
+  slices: number,
+  shaded: number,
+  color: BarColor
+): FractionCircle {
+  return { id: makeCircleId(), slices, shaded, color };
+}
+
 // ── Initial State ───────────────────────────────────────────────────
 
 export const initialState: ManipulativeState = {
   bars: [],
+  circles: [],
   selectedBarId: null,
   selectedSegmentId: null,
 };
@@ -170,7 +187,7 @@ export function fractionReducer(
 
     case "RESET": {
       resetCounters();
-      return { ...initialState, bars: [] };
+      return { ...initialState };
     }
 
     case "SET_STATE": {
@@ -178,6 +195,7 @@ export function fractionReducer(
       return {
         ...state,
         bars: action.bars,
+        circles: action.circles,
         selectedBarId: null,
         selectedSegmentId: null,
       };
@@ -271,6 +289,6 @@ export function fractionReducer(
   }
 }
 
-// ── Bar Factory (used by lesson setup) ──────────────────────────────
+// ── Factories (used by lesson setup) ────────────────────────────────
 
-export { createBar };
+export { createBar, createCircle };
