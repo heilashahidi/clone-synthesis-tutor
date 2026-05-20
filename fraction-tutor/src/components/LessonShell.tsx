@@ -74,33 +74,12 @@ export function LessonShell({
   const handleSegmentTap = useCallback(
     (barId: string, segmentId: string) => {
       if (isLocked("SHADE")) return;
-      // Keep the shaded portion contiguous from the left so the
-      // visual fraction always matches the math fraction (e.g.,
-      // 2/4 is always the left half, never two scattered pieces).
-      const bar = manipState.bars.find((b) => b.id === barId);
-      if (!bar) return;
-      const segIdx = bar.segments.findIndex((s) => s.id === segmentId);
-      if (segIdx < 0) return;
-      const seg = bar.segments[segIdx];
-      if (seg.shaded) {
-        // Un-shading only allowed on the rightmost shaded piece.
-        let rightmostShadedIdx = -1;
-        for (let i = bar.segments.length - 1; i >= 0; i--) {
-          if (bar.segments[i].shaded) {
-            rightmostShadedIdx = i;
-            break;
-          }
-        }
-        if (segIdx !== rightmostShadedIdx) return;
-      } else {
-        // Shading only allowed on the leftmost unshaded piece.
-        const leftmostUnshadedIdx = bar.segments.findIndex((s) => !s.shaded);
-        if (segIdx !== leftmostUnshadedIdx) return;
-      }
+      // The reducer enforces the contiguous-from-left rule so a
+      // non-leftmost tap is dropped at the reducer level too.
       dispatch({ type: "SHADE", barId, segmentId });
       notifyAction("SHADE");
     },
-    [allowedActions, manipState.bars, notifyAction]
+    [allowedActions, notifyAction]
   );
 
   const handleSegmentDoubleTap = useCallback(

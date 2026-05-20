@@ -88,16 +88,41 @@ export function fractionReducer(
     }
 
     case "SHADE": {
+      // The shaded portion of a bar must stay contiguous from the
+      // left — so the visual fraction always matches the math
+      // fraction (e.g., 2/4 is always the left half, never two
+      // scattered pieces). Enforce that here, not in handlers, so
+      // no client-side path can bypass it.
       return {
         ...state,
         bars: state.bars.map((bar) => {
           if (bar.id !== action.barId) return bar;
+          const segIdx = bar.segments.findIndex(
+            (s) => s.id === action.segmentId
+          );
+          if (segIdx < 0) return bar;
+          const seg = bar.segments[segIdx];
+          if (seg.shaded) {
+            // Un-shading: only the rightmost shaded piece may flip.
+            let rightmostShadedIdx = -1;
+            for (let i = bar.segments.length - 1; i >= 0; i--) {
+              if (bar.segments[i].shaded) {
+                rightmostShadedIdx = i;
+                break;
+              }
+            }
+            if (segIdx !== rightmostShadedIdx) return bar;
+          } else {
+            // Shading: only the leftmost unshaded piece may flip.
+            const leftmostUnshadedIdx = bar.segments.findIndex(
+              (s) => !s.shaded
+            );
+            if (segIdx !== leftmostUnshadedIdx) return bar;
+          }
           return {
             ...bar,
-            segments: bar.segments.map((seg) =>
-              seg.id === action.segmentId
-                ? { ...seg, shaded: !seg.shaded }
-                : seg
+            segments: bar.segments.map((s) =>
+              s.id === action.segmentId ? { ...s, shaded: !s.shaded } : s
             ),
           };
         }),
