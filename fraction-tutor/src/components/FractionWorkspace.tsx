@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { FractionBar } from "./FractionBar";
-import { fractionsEqual, barToFraction } from "../engine/conditions";
 import type { FractionBar as FractionBarType } from "../engine/types";
 import styles from "../styles/FractionWorkspace.module.css";
 
@@ -33,12 +32,6 @@ export function FractionWorkspace({
 }: FractionWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const lastClickTime = useRef(0);
-
-  const areEquivalent =
-    bars.length >= 2 &&
-    barToFraction(bars[0]).numerator > 0 &&
-    barToFraction(bars[1]).numerator > 0 &&
-    fractionsEqual(barToFraction(bars[0]), barToFraction(bars[1]));
 
   // Detect a double-click on empty workspace area (not on any segment).
   // Tracks two quick taps via timestamps so it works for both mouse
@@ -75,12 +68,6 @@ export function FractionWorkspace({
           onSegmentDragEnd={onSegmentDragEnd}
         />
       ))}
-      {areEquivalent && (
-        <div className={styles.equivalenceIndicator}>
-          <span className={styles.equalsSign}>=</span>
-          <span className={styles.equalsText}>Same amount!</span>
-        </div>
-      )}
       {bars.length === 0 && (
         <div className={styles.empty}>
           Double-tap anywhere to add a bar
