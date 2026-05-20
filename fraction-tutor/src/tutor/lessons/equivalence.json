@@ -81,7 +81,7 @@
       "id": "equiv_challenge_1",
       "type": "message",
       "message": "Here's a second bar. Can you make it show 2/4?",
-      "next": "equiv_split_teach",
+      "next": "equiv_wait_1",
       "setup": {
         "bars": [
           { "segments": 2, "shaded": 1, "color": "teal" },
@@ -89,16 +89,10 @@
         ]
       }
     },
-    "equiv_split_teach": {
-      "id": "equiv_split_teach",
-      "type": "message",
-      "message": "Tap a piece twice quickly to split it in half. Try it on the blue bar!",
-      "next": "equiv_wait_1"
-    },
     "equiv_wait_1": {
       "id": "equiv_wait_1",
       "type": "wait_for_action",
-      "message": "Split until you have 4 pieces, then tap 2 to color them.",
+      "message": "Tap a piece twice quickly to split it in half. Keep splitting until you have 4 pieces, then tap 2 to color them.",
       "condition": {
         "type": "fraction_equals",
         "barIndex": 1,
