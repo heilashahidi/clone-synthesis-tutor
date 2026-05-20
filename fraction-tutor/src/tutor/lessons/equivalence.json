@@ -55,24 +55,18 @@
       "id": "define_2",
       "type": "message",
       "message": "1/2 and 2/4 are equivalent. Different numbers, same amount colored. Let's learn how to find them!",
-      "next": "shade_teach"
+      "next": "shade_wait"
     },
 
-    "shade_teach": {
-      "id": "shade_teach",
-      "type": "message",
+    "shade_wait": {
+      "id": "shade_wait",
+      "type": "wait_for_action",
       "message": "Here's one whole bar. Tap it to color it in!",
-      "next": "shade_wait",
       "setup": {
         "bars": [
           { "segments": 1, "shaded": 0, "color": "teal" }
         ]
-      }
-    },
-    "shade_wait": {
-      "id": "shade_wait",
-      "type": "wait_for_action",
-      "message": "Tap the bar to color it.",
+      },
       "condition": {
         "type": "fraction_equals",
         "barIndex": 0,
@@ -121,25 +115,19 @@
       "id": "cut_confirm",
       "type": "message",
       "message": "When you cut a bar into more pieces, you can find a new fraction that means the same thing. Let's try it!",
-      "next": "split_teach"
+      "next": "split_wait"
     },
 
-    "split_teach": {
-      "id": "split_teach",
-      "type": "message",
+    "split_wait": {
+      "id": "split_wait",
+      "type": "wait_for_action",
       "message": "I added a second bar below. Tap a piece in it two times quickly to cut it in half.",
-      "next": "split_wait",
       "setup": {
         "bars": [
           { "segments": 2, "shaded": 1, "color": "teal" },
           { "segments": 1, "shaded": 0, "color": "blue" }
         ]
-      }
-    },
-    "split_wait": {
-      "id": "split_wait",
-      "type": "wait_for_action",
-      "message": "Double-tap a piece in the blue bar to cut it.",
+      },
       "condition": {
         "type": "action_performed",
         "action": "SPLIT"
@@ -191,7 +179,7 @@
       "id": "equiv_confirm_1",
       "type": "message",
       "message": "Yes! You just found an equivalent fraction by cutting into more pieces. The colored amount stayed the same.",
-      "next": "challenge_2_setup"
+      "next": "challenge_2_wait"
     },
     "equiv_misconception_1": {
       "id": "equiv_misconception_1",
@@ -206,22 +194,16 @@
       "next": "equiv_confirm_1"
     },
 
-    "challenge_2_setup": {
-      "id": "challenge_2_setup",
-      "type": "message",
-      "message": "Let's try a harder one. The top bar shows 2/3. Can you make the bottom bar match it?",
-      "next": "challenge_2_wait",
+    "challenge_2_wait": {
+      "id": "challenge_2_wait",
+      "type": "wait_for_action",
+      "message": "Let's try a harder one. The top bar shows 2/3 — cut and color the purple bar until it matches.",
       "setup": {
         "bars": [
           { "segments": 3, "shaded": 2, "color": "coral" },
           { "segments": 1, "shaded": 0, "color": "purple" }
         ]
-      }
-    },
-    "challenge_2_wait": {
-      "id": "challenge_2_wait",
-      "type": "wait_for_action",
-      "message": "Cut and color the purple bar until it matches 2/3.",
+      },
       "condition": {
         "type": "fraction_equals",
         "barIndex": 1,
