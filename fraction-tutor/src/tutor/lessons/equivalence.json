@@ -19,30 +19,38 @@
     "hook_2": {
       "id": "hook_2",
       "type": "prompt",
-      "message": "What do you notice?",
+      "message": "What do you notice about the colored parts?",
       "options": [
-        { "label": "Different pieces, same color amount", "next": "hook_confirm", "isCorrect": true },
-        { "label": "One has more pieces", "next": "hook_more_pieces" },
-        { "label": "They look different", "next": "hook_look_different" }
+        { "label": "They're the same size", "next": "hook_confirm", "isCorrect": true },
+        { "label": "They're different sizes", "next": "hook_redirect" }
       ]
+    },
+    "hook_redirect": {
+      "id": "hook_redirect",
+      "type": "message",
+      "message": "Look at where the color ends on each bar — the top one and the bottom one. Do they stop at the same spot?",
+      "next": "hook_retry"
+    },
+    "hook_retry": {
+      "id": "hook_retry",
+      "type": "prompt",
+      "message": "Now look again — do the colored parts take up the same amount of space?",
+      "options": [
+        { "label": "Yes, they match!", "next": "hook_confirm", "isCorrect": true },
+        { "label": "I still don't see it", "next": "hook_give" }
+      ]
+    },
+    "hook_give": {
+      "id": "hook_give",
+      "type": "message",
+      "message": "That's okay! The colored parts actually do end at the same spot. Even though one bar has more pieces, the colored amount is the same.",
+      "next": "define_1"
     },
     "hook_confirm": {
       "id": "hook_confirm",
       "type": "message",
-      "message": "Exactly! Different number of pieces, but the colored part is the same size. That's today's big idea.",
+      "message": "Exactly! Different number of pieces, but the colored part is the same size.",
       "next": "define_1"
-    },
-    "hook_more_pieces": {
-      "id": "hook_more_pieces",
-      "type": "message",
-      "message": "Right — the bottom bar has more pieces. But look at the colored parts. They end at the same spot!",
-      "next": "hook_confirm"
-    },
-    "hook_look_different": {
-      "id": "hook_look_different",
-      "type": "message",
-      "message": "They do look different! But look at just the colored parts. They take up the same amount of space.",
-      "next": "hook_confirm"
     },
 
     "define_1": {
@@ -101,14 +109,28 @@
       "message": "Same amount is colored, but now there are 2 pieces. 1 out of 2 is colored — that's 1/2. Make sense?",
       "options": [
         { "label": "Got it!", "next": "cut_confirm" },
-        { "label": "I think so", "next": "cut_confirm" },
-        { "label": "Wait, what?", "next": "cut_explain" }
+        { "label": "Not really", "next": "cut_explain" }
       ]
     },
     "cut_explain": {
       "id": "cut_explain",
       "type": "message",
-      "message": "Count the pieces — there are 2. Count the colored ones — there's 1. That's 1 out of 2, or 1/2!",
+      "message": "Count the pieces — there are 2. Count the colored ones — there's 1. The colored piece is 1 out of 2.",
+      "next": "cut_retry"
+    },
+    "cut_retry": {
+      "id": "cut_retry",
+      "type": "prompt",
+      "message": "So if 1 out of 2 pieces is colored, we write that as 1/2. Ready to keep going?",
+      "options": [
+        { "label": "Yes!", "next": "cut_confirm" },
+        { "label": "Can you say that again?", "next": "cut_explain_2" }
+      ]
+    },
+    "cut_explain_2": {
+      "id": "cut_explain_2",
+      "type": "message",
+      "message": "The bottom number is how many pieces total (2). The top number is how many are colored (1). So it's 1/2!",
       "next": "cut_confirm"
     },
     "cut_confirm": {
@@ -171,33 +193,41 @@
       "message": "1/2 and 2/4 — same amount or different?",
       "options": [
         { "label": "Same amount!", "next": "equiv_confirm_1", "isCorrect": true },
-        { "label": "2/4 is bigger?", "next": "equiv_misconception_1" },
-        { "label": "Hmm, not sure", "next": "equiv_hint_1" }
+        { "label": "Different amount", "next": "equiv_redirect_1" }
       ]
+    },
+    "equiv_redirect_1": {
+      "id": "equiv_redirect_1",
+      "type": "message",
+      "message": "Look at the bars again. The colored parts on top and bottom — do they end at the same spot or different spots?",
+      "next": "equiv_retry_1"
+    },
+    "equiv_retry_1": {
+      "id": "equiv_retry_1",
+      "type": "prompt",
+      "message": "If the colored parts end at the same spot, does that mean they're the same amount?",
+      "options": [
+        { "label": "Yes, same amount!", "next": "equiv_confirm_1", "isCorrect": true },
+        { "label": "I'm not sure", "next": "equiv_give_1" }
+      ]
+    },
+    "equiv_give_1": {
+      "id": "equiv_give_1",
+      "type": "message",
+      "message": "They are the same! The colored parts end at the same spot, which means 1/2 and 2/4 are the same amount — just cut into different sized pieces.",
+      "next": "challenge_2_wait"
     },
     "equiv_confirm_1": {
       "id": "equiv_confirm_1",
       "type": "message",
-      "message": "Yes! You just found an equivalent fraction by cutting into more pieces. The colored amount stayed the same.",
+      "message": "Yes! You found an equivalent fraction by cutting into more pieces. The colored amount stayed the same.",
       "next": "challenge_2_wait"
-    },
-    "equiv_misconception_1": {
-      "id": "equiv_misconception_1",
-      "type": "message",
-      "message": "The numbers are bigger, but look at the bars. The colored parts are the same size! More pieces just means smaller pieces.",
-      "next": "equiv_confirm_1"
-    },
-    "equiv_hint_1": {
-      "id": "equiv_hint_1",
-      "type": "message",
-      "message": "Look at where the color stops on each bar. They line up — same space, same amount!",
-      "next": "equiv_confirm_1"
     },
 
     "challenge_2_wait": {
       "id": "challenge_2_wait",
       "type": "wait_for_action",
-      "message": "Let's try a harder one. The top bar shows 2/3 — cut and color the purple bar until it matches.",
+      "message": "Let's try a harder one. The top bar shows 2/3 — cut and color the purple bar until the colored parts match.",
       "setup": {
         "bars": [
           { "segments": 3, "shaded": 2, "color": "coral" },
@@ -218,35 +248,43 @@
     "challenge_2_reveal": {
       "id": "challenge_2_reveal",
       "type": "message",
-      "message": "The colored parts line up again — you found another equivalent fraction!",
+      "message": "The colored parts line up again!",
       "next": "pattern_question"
     },
     "pattern_question": {
       "id": "pattern_question",
       "type": "prompt",
-      "message": "We keep cutting bars into more pieces but the colored amount stays the same. Why does that work?",
+      "message": "We keep cutting bars into more pieces but the colored amount stays the same. Why?",
       "options": [
-        { "label": "More pieces means each piece is smaller", "next": "pattern_confirm", "isCorrect": true },
-        { "label": "The numbers just get bigger", "next": "pattern_redirect" },
-        { "label": "Not sure yet", "next": "pattern_explain" }
+        { "label": "More pieces means smaller pieces", "next": "pattern_confirm", "isCorrect": true },
+        { "label": "I'm not sure", "next": "pattern_redirect" }
       ]
+    },
+    "pattern_redirect": {
+      "id": "pattern_redirect",
+      "type": "message",
+      "message": "Look at the pieces in the bottom bar. They're smaller than the pieces in the top bar, right? But there are more of them colored.",
+      "next": "pattern_retry"
+    },
+    "pattern_retry": {
+      "id": "pattern_retry",
+      "type": "prompt",
+      "message": "Smaller pieces, but more of them colored — does the total colored amount change?",
+      "options": [
+        { "label": "No, it stays the same!", "next": "pattern_confirm", "isCorrect": true },
+        { "label": "I think it changes?", "next": "pattern_give" }
+      ]
+    },
+    "pattern_give": {
+      "id": "pattern_give",
+      "type": "message",
+      "message": "It actually stays the same! Cutting makes smaller pieces, but you color more of them — so the total colored part doesn't change.",
+      "next": "non_example_setup"
     },
     "pattern_confirm": {
       "id": "pattern_confirm",
       "type": "message",
       "message": "That's the secret! Cutting makes smaller pieces — but you color more of them. It balances out.",
-      "next": "non_example_setup"
-    },
-    "pattern_redirect": {
-      "id": "pattern_redirect",
-      "type": "message",
-      "message": "The numbers change, but the colored part doesn't! More pieces, smaller pieces, more of them colored — it evens out.",
-      "next": "pattern_confirm"
-    },
-    "pattern_explain": {
-      "id": "pattern_explain",
-      "type": "message",
-      "message": "Look at the bars. The top bar has big pieces. The bottom has small pieces. But the colored parts are the same length!",
       "next": "non_example_setup"
     },
 
@@ -267,28 +305,36 @@
       "type": "prompt",
       "message": "Do the colored parts end at the same spot?",
       "options": [
-        { "label": "No — 1/2 is bigger!", "next": "non_example_correct", "isCorrect": true },
-        { "label": "They look the same?", "next": "non_example_wrong" },
-        { "label": "1/3 is bigger?", "next": "non_example_misconception" }
+        { "label": "No, they're different", "next": "non_example_correct", "isCorrect": true },
+        { "label": "Yes, they match", "next": "non_example_redirect" }
       ]
+    },
+    "non_example_redirect": {
+      "id": "non_example_redirect",
+      "type": "message",
+      "message": "Look again at the right edge of each colored part. The teal bar's color goes further than the coral bar's.",
+      "next": "non_example_retry"
+    },
+    "non_example_retry": {
+      "id": "non_example_retry",
+      "type": "prompt",
+      "message": "So which colored part is bigger — the top bar or the bottom bar?",
+      "options": [
+        { "label": "The top bar (1/2)", "next": "non_example_correct", "isCorrect": true },
+        { "label": "The bottom bar (1/3)", "next": "non_example_give" }
+      ]
+    },
+    "non_example_give": {
+      "id": "non_example_give",
+      "type": "message",
+      "message": "3 is a bigger number than 2, but more pieces means each piece is smaller! The top bar's colored part is actually bigger. 1/2 is more than 1/3.",
+      "next": "non_example_why"
     },
     "non_example_correct": {
       "id": "non_example_correct",
       "type": "message",
       "message": "Right! The colored parts don't line up — so 1/2 and 1/3 are not equivalent.",
       "next": "non_example_why"
-    },
-    "non_example_wrong": {
-      "id": "non_example_wrong",
-      "type": "message",
-      "message": "Look closely — the teal color goes further than the coral. 1/2 is more than 1/3!",
-      "next": "non_example_correct"
-    },
-    "non_example_misconception": {
-      "id": "non_example_misconception",
-      "type": "message",
-      "message": "3 is a bigger number, but more pieces means each piece is smaller. 1 out of 3 is actually less than 1 out of 2!",
-      "next": "non_example_correct"
     },
     "non_example_why": {
       "id": "non_example_why",
@@ -309,19 +355,39 @@
       "type": "check",
       "message": "Which fraction is equivalent to 1/2?",
       "options": [
-        { "label": "2/3", "next": "quiz_1_wrong", "isCorrect": false },
         { "label": "3/6", "next": "quiz_1_right", "isCorrect": true },
-        { "label": "1/4", "next": "quiz_1_wrong", "isCorrect": false }
+        { "label": "1/4", "next": "quiz_1_redirect", "isCorrect": false }
       ],
       "correctNext": "quiz_1_right",
       "correctMessage": "Yes! 3/6 equals 1/2.",
-      "incorrectNext": "quiz_1_wrong",
-      "incorrectMessage": "Not quite — check the bars."
+      "incorrectNext": "quiz_1_redirect",
+      "incorrectMessage": "Not quite — let's check."
     },
-    "quiz_1_right": {
-      "id": "quiz_1_right",
+    "quiz_1_redirect": {
+      "id": "quiz_1_redirect",
       "type": "message",
-      "message": "3 out of 6 — the colored parts line up with 1 out of 2!",
+      "message": "Let's look at the bars. See where the colored parts end on each one.",
+      "next": "quiz_1_retry",
+      "setup": {
+        "bars": [
+          { "segments": 2, "shaded": 1, "color": "teal" },
+          { "segments": 4, "shaded": 1, "color": "blue" }
+        ]
+      }
+    },
+    "quiz_1_retry": {
+      "id": "quiz_1_retry",
+      "type": "prompt",
+      "message": "1/4 doesn't line up with 1/2. What about 3/6 — would 3 out of 6 pieces line up with 1 out of 2?",
+      "options": [
+        { "label": "Yes, 3/6 matches!", "next": "quiz_1_right", "isCorrect": true },
+        { "label": "I don't think so", "next": "quiz_1_give" }
+      ]
+    },
+    "quiz_1_give": {
+      "id": "quiz_1_give",
+      "type": "message",
+      "message": "Look — 3 out of 6 takes up exactly the same space as 1 out of 2. They're equivalent!",
       "next": "quiz_2",
       "setup": {
         "bars": [
@@ -330,10 +396,10 @@
         ]
       }
     },
-    "quiz_1_wrong": {
-      "id": "quiz_1_wrong",
+    "quiz_1_right": {
+      "id": "quiz_1_right",
       "type": "message",
-      "message": "Look — 1/2 and 3/6 line up perfectly. Same amount, different pieces!",
+      "message": "3 out of 6 — the colored parts line up with 1 out of 2!",
       "next": "quiz_2",
       "setup": {
         "bars": [
@@ -349,18 +415,38 @@
       "message": "Which fraction is equivalent to 2/3?",
       "options": [
         { "label": "4/6", "next": "quiz_2_right", "isCorrect": true },
-        { "label": "2/6", "next": "quiz_2_wrong", "isCorrect": false },
-        { "label": "3/4", "next": "quiz_2_wrong", "isCorrect": false }
+        { "label": "2/6", "next": "quiz_2_redirect", "isCorrect": false }
       ],
       "correctNext": "quiz_2_right",
       "correctMessage": "Yes! 4/6 equals 2/3.",
-      "incorrectNext": "quiz_2_wrong",
-      "incorrectMessage": "Let's look at the bars."
+      "incorrectNext": "quiz_2_redirect",
+      "incorrectMessage": "Let's check with the bars."
     },
-    "quiz_2_right": {
-      "id": "quiz_2_right",
+    "quiz_2_redirect": {
+      "id": "quiz_2_redirect",
       "type": "message",
-      "message": "4 out of 6 matches 2 out of 3 — each top piece equals two bottom pieces!",
+      "message": "Let's see. Here's 2/3 on top and 2/6 on the bottom. Look at the colored parts.",
+      "next": "quiz_2_retry",
+      "setup": {
+        "bars": [
+          { "segments": 3, "shaded": 2, "color": "coral" },
+          { "segments": 6, "shaded": 2, "color": "purple" }
+        ]
+      }
+    },
+    "quiz_2_retry": {
+      "id": "quiz_2_retry",
+      "type": "prompt",
+      "message": "2/6 doesn't line up with 2/3 — the colored parts are different sizes. What about 4/6?",
+      "options": [
+        { "label": "4/6 would match!", "next": "quiz_2_right", "isCorrect": true },
+        { "label": "I'm not sure", "next": "quiz_2_give" }
+      ]
+    },
+    "quiz_2_give": {
+      "id": "quiz_2_give",
+      "type": "message",
+      "message": "4 out of 6 takes up the same space as 2 out of 3. They're equivalent!",
       "next": "quiz_3",
       "setup": {
         "bars": [
@@ -369,10 +455,10 @@
         ]
       }
     },
-    "quiz_2_wrong": {
-      "id": "quiz_2_wrong",
+    "quiz_2_right": {
+      "id": "quiz_2_right",
       "type": "message",
-      "message": "See — 4/6 lines up with 2/3. Each piece on top equals two pieces on the bottom!",
+      "message": "4 out of 6 matches 2 out of 3 — each top piece equals two bottom pieces!",
       "next": "quiz_3",
       "setup": {
         "bars": [
@@ -387,18 +473,39 @@
       "type": "check",
       "message": "Last one — are 2/4 and 3/4 equivalent?",
       "options": [
-        { "label": "Yes, they're equal", "next": "quiz_3_wrong", "isCorrect": false },
-        { "label": "No, they're different", "next": "quiz_3_right", "isCorrect": true }
+        { "label": "No, they're different", "next": "quiz_3_right", "isCorrect": true },
+        { "label": "Yes, they're equal", "next": "quiz_3_redirect", "isCorrect": false }
       ],
       "correctNext": "quiz_3_right",
       "correctMessage": "Right! Different amounts colored.",
-      "incorrectNext": "quiz_3_wrong",
-      "incorrectMessage": "Look at the colored parts."
+      "incorrectNext": "quiz_3_redirect",
+      "incorrectMessage": "Let's look closer."
     },
-    "quiz_3_right": {
-      "id": "quiz_3_right",
+    "quiz_3_redirect": {
+      "id": "quiz_3_redirect",
       "type": "message",
-      "message": "2 colored vs 3 colored — the bars don't line up, so they're not equivalent!",
+      "message": "Look at the bars. Count how many pieces are colored on each one.",
+      "next": "quiz_3_retry",
+      "setup": {
+        "bars": [
+          { "segments": 4, "shaded": 2, "color": "teal" },
+          { "segments": 4, "shaded": 3, "color": "blue" }
+        ]
+      }
+    },
+    "quiz_3_retry": {
+      "id": "quiz_3_retry",
+      "type": "prompt",
+      "message": "The top bar has 2 colored, the bottom has 3. Do the colored parts end at the same spot?",
+      "options": [
+        { "label": "No, they're different!", "next": "quiz_3_right", "isCorrect": true },
+        { "label": "I think they match?", "next": "quiz_3_give" }
+      ]
+    },
+    "quiz_3_give": {
+      "id": "quiz_3_give",
+      "type": "message",
+      "message": "2 colored vs 3 colored — the bottom bar has more color! They don't line up, so they're not equivalent.",
       "next": "complete",
       "setup": {
         "bars": [
@@ -407,10 +514,10 @@
         ]
       }
     },
-    "quiz_3_wrong": {
-      "id": "quiz_3_wrong",
+    "quiz_3_right": {
+      "id": "quiz_3_right",
       "type": "message",
-      "message": "2 pieces colored vs 3 — that's a different amount! The bars don't line up.",
+      "message": "2 colored vs 3 colored — the bars don't line up, so they're not equivalent!",
       "next": "complete",
       "setup": {
         "bars": [
