@@ -199,8 +199,7 @@
       },
       "onMet": "equiv_reveal_1",
       "hint": "Double-tap to cut pieces. Single-tap to color them.",
-      "hintDelay": 15,
-      "llmFallthrough": true
+      "hintDelay": 15
     },
     "equiv_reveal_1": {
       "id": "equiv_reveal_1",
@@ -354,8 +353,7 @@
       },
       "onMet": "challenge_2_reveal",
       "hint": "Try cutting into 6 pieces and coloring 4. See if the colored parts line up!",
-      "hintDelay": 20,
-      "llmFallthrough": true
+      "hintDelay": 20
     },
     "challenge_2_reveal": {
       "id": "challenge_2_reveal",

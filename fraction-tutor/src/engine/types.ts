@@ -111,9 +111,6 @@ export type LessonNode = {
   incorrectNext?: string;
   incorrectMessage?: string;
 
-  // LLM safety net
-  llmFallthrough?: boolean;
-
   // Restrict which gestures the student can use while on this node.
   // Only honored for wait_for_action nodes. If omitted on a
   // wait_for_action with a fraction_equals condition, all gestures

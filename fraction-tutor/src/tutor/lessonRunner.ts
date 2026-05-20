@@ -10,14 +10,6 @@ import type {
 } from "../engine/types";
 import { checkCondition } from "../engine/conditions";
 import { createBar, createCircle, resetCounters } from "../engine/fractionReducer";
-import { handleUnrecognizedState } from "./llmSafetyNet";
-import { isLlmConfigured } from "./tutorApi";
-
-// Time (ms) between the scripted hint and the LLM "second-chance"
-// hint. The runner only schedules the LLM hint when a proxy is
-// configured (VITE_TUTOR_API_URL) and the node opts in via
-// `llmFallthrough: true`.
-const LLM_HINT_AFTER_SCRIPTED_MS = 15_000;
 
 let messageCounter = 0;
 
@@ -57,13 +49,7 @@ export function useLessonRunner({
   }));
 
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const llmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasProcessedNode = useRef<string | null>(null);
-
-  // Async LLM callbacks fire after a delay, so they need a live
-  // handle on the current bars rather than the captured value.
-  const barsRef = useRef(bars);
-  barsRef.current = bars;
 
   const currentNode: LessonNode | undefined = lesson.nodes[state.currentNodeId];
 
@@ -96,10 +82,6 @@ export function useLessonRunner({
         clearTimeout(hintTimerRef.current);
         hintTimerRef.current = null;
       }
-      if (llmTimerRef.current) {
-        clearTimeout(llmTimerRef.current);
-        llmTimerRef.current = null;
-      }
 
       if (node.type === "wait_for_action" && node.hint) {
         const scriptedDelay = (node.hintDelay ?? 15) * 1000;
@@ -113,26 +95,6 @@ export function useLessonRunner({
             };
           });
         }, scriptedDelay);
-
-        // LLM second-chance hint: fires after the scripted hint when
-        // the node opts in via `llmFallthrough` AND a proxy is wired.
-        // Uses the current bars to generate a contextual nudge.
-        if (node.llmFallthrough && isLlmConfigured()) {
-          const llmDelay = scriptedDelay + LLM_HINT_AFTER_SCRIPTED_MS;
-          llmTimerRef.current = setTimeout(async () => {
-            const helpText = await handleUnrecognizedState(
-              barsRef.current,
-              node.message
-            );
-            setState((prev) => {
-              if (prev.currentNodeId !== node.id) return prev;
-              return {
-                ...prev,
-                messages: [...prev.messages, makeTutorMessage(helpText)],
-              };
-            });
-          }, llmDelay);
-        }
       }
     },
     [dispatch, getStepForNode]
@@ -221,7 +183,6 @@ export function useLessonRunner({
   useEffect(() => {
     return () => {
       if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-      if (llmTimerRef.current) clearTimeout(llmTimerRef.current);
     };
   }, []);
 
