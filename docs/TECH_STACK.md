@@ -4,65 +4,66 @@
 
 | Layer | Technology | Version | Purpose |
 |-------|-----------|---------|---------|
-| Language | TypeScript | 6.x | Type safety for fraction state, lesson schemas, API contracts |
-| UI Framework | React | 19.x | Component model, state management via useReducer, hooks |
-| Build Tool | Vite | 8.x | Fast HMR during development, optimized production builds |
-| Native Shell | Capacitor | 6.x | Wraps the web app as a native iPad app for App Store distribution (not yet installed — added when deploying to iPad) |
+| Language | TypeScript | 6.x | Type safety for fraction state, lesson schemas, voice API contracts |
+| UI Framework | React | 19.x | Component model, state via useReducer + hooks |
+| Build Tool | Vite | 8.x | Fast HMR during dev; hashed, tree-shaken production bundles |
+
+The app ships as a single-page web app deployed to Cloudflare Pages. Native iPad packaging (Capacitor) is a possible next step but not part of the current build.
 
 ## UI and Interaction
 
 | Library | Purpose | Why this over alternatives |
 |---------|---------|---------------------------|
-| framer-motion | Split/combine/shade animations, layout transitions | `layoutId` handles the fraction split animation natively — segments redistribute within a flex container and framer interpolates position. Also provides `whileTap` for press feedback. CSS transitions can't do layout-driven animation. |
-| CSS Modules | Scoped component styles | No runtime cost, no class name collisions. Tailwind is viable but the manipulative needs precise pixel control over segment sizing and border placement that utility classes make verbose. |
+| framer-motion | Drag handling, `whileTap` press feedback, motion values, layout animations | Built-in drag with pointer/touch parity, `useMotionValue` for spring-back animations on rejected drags, `whileTap` for instant scale-down feedback. Replaces having to hand-roll pointer event tracking. |
+| CSS Modules | Scoped component styles | No runtime cost, no class name collisions. Pairs with a few global CSS files for body / fonts / grid background. |
+| Google Fonts (Nunito) | Body font, weights 400–900 | Rounded geometric sans-serif that reads well for kids and stays legible at small sizes. Loaded from `fonts.googleapis.com` via `<link>` in `index.html`. |
 
-Note: `@use-gesture/react` is listed in the architecture as a future addition for drag-to-combine and pinch-to-split gestures. The current build uses tap-to-select + button-to-act, which covers the lesson flow without a gesture library. Add it when implementing advanced touch interactions.
+`:has()` is used in `FractionBar.module.css` to animate the whole bar when any child segment has `data-holding="true"` (smash charge animation). Supported in all modern browsers since 2023.
 
-## Tutor and AI
+## Tutor
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| Lesson Script | JSON state machine | Primary tutor voice. All planned dialogue, hints, feedback, and branching logic is authored by a human and stored as JSON nodes. This is what the student hears 90% of the time. Readable and editable by curriculum designers without touching code. |
-| LLM (safety net) | Claude Haiku (claude-haiku-4-5-20251001) | Handles edge cases the script can't anticipate: unrecognized manipulative states, misconception classification for unexpected wrong answers, and dynamic second-chance hints. Called only when no scripted branch matches. Sub-second latency, lowest cost in the Claude family. |
-| API Proxy | Cloudflare Worker | Holds the Anthropic API key server-side. Rate limits requests. Adds a 2-second timeout — if the LLM doesn't respond in time, the app falls back to a generic scripted redirect. Single file deployment, no infrastructure to manage. |
+| Lesson Script | JSON state machine | The entire tutor voice. Every line of dialogue, every branch, every hint — authored by a human and stored as nodes in `equivalence.json`. Readable and editable by curriculum designers without touching code. |
 
-## Capacitor Plugins (install when adding iPad deployment)
+No LLM is wired into the current build. An earlier version had a Claude Haiku safety net for unrecognized manipulative states; it was removed when the script grew comprehensive enough to cover the lesson surface without it. The `llmFallthrough` flag still appears on a few wait nodes in the JSON but is currently inert.
 
-| Plugin | Purpose |
-|--------|---------|
-| @capacitor/haptics | Vibration feedback on split, combine, and correct-answer events. Reinforces physical interaction metaphor. |
-| @capacitor/screen-orientation | Locks to landscape. Fraction bars need horizontal width for visual comparison. |
-| @capacitor/status-bar | Hides the iOS status bar for full-screen immersion. |
-| @capacitor/preferences | Local key-value storage for lesson progress persistence between sessions. |
-| @capacitor/splash-screen | Custom launch screen while the web view initializes. |
+## Voice
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| TTS provider | ElevenLabs (`eleven_flash_v2_5`) | Low-latency synthesis. The Cloudflare Worker proxy holds the API key; the browser only sees the proxy URL. |
+| Voice proxy | Cloudflare Worker | `POST /tts` accepts `{ text, voiceId? }` and streams `audio/mpeg`. Holds `ELEVENLABS_API_KEY` as a Cloudflare secret. |
+| Audio playback | HTML `<audio>` element | The Worker streams MPEG bytes back, the browser plays them. Mute / autoplay-block / proxy-down all fall through gracefully to "voice has ended" so the UI never strands. |
+
+The Splash "Start" button exists primarily to capture the user gesture browsers require before they'll allow audio playback.
 
 ## Development Tooling
 
 | Tool | Status | Purpose |
 |------|--------|---------|
-| ESLint | Installed | Code linting. Enforces consistent style across components. |
-| Prettier | Add later | Code formatting. Pair with ESLint for auto-formatting on save. |
-| Vitest | Add later | Unit tests for the fraction reducer (split, combine, shade logic) and lesson runner (state machine transitions). Fast, Vite-native. |
-| Playwright | Add later | End-to-end tests for lesson flow. Simulates tapping segments, choosing responses, and verifying the tutor advances correctly. Runs headless in CI. |
-| Storybook | Add later | Visual development of FractionBar and Segment components in isolation. Useful for tuning animations and testing different segment counts without running the full app. |
+| ESLint | Installed | Code linting via `npm run lint`. |
+| `tsc -p tsconfig.app.json` | Installed | Type check (`npx tsc --noEmit -p tsconfig.app.json`). Vite uses esbuild for builds, so type errors only surface via tsc. |
+| Vitest | Add later | Unit tests for the fraction reducer (split, shade, combine, smash, circle ops) and lesson runner transitions. |
+| Playwright | Add later | E2E tests for lesson flow. Simulates gestures, choosing responses, walking the lesson to completion. |
 
 ## Deployment
 
 | Concern | Approach |
 |---------|----------|
-| iPad App | Capacitor builds an Xcode project. Archive and submit to App Store via Xcode or Fastlane. TestFlight for beta distribution. |
-| API Proxy | Cloudflare Workers. Deploy with `wrangler deploy`. Free tier handles 100k requests/day, which covers thousands of lesson sessions. |
-| CI/CD | GitHub Actions. On push: lint, test (Vitest + Playwright), build. On tag: Capacitor sync, Xcode archive, TestFlight upload via Fastlane. |
+| Frontend | Cloudflare Pages. `npm run build` → `npx wrangler pages deploy dist --project-name=fraction-tutor --commit-dirty=true`. |
+| Voice proxy | Cloudflare Workers. `cd proxy && npx wrangler deploy`. ELEVENLABS_API_KEY set via `wrangler secret put`. |
+| Git | A single `origin` remote with two push URLs (GitHub + GitLab) so one `git push origin main` updates both hosts. |
 
 ## Why Not...
 
 | Alternative | Reason for exclusion |
 |-------------|----------------------|
-| Next.js / Remix | This is a single-page, single-lesson app with no routing, no SSR, no SEO needs. A meta-framework adds complexity with zero benefit. Vite + React is the minimal correct choice. |
-| Redux / Zustand | The app has one reducer (fraction state) and one hook (lesson runner). React's built-in useReducer + useContext handles this without a third-party state library. |
-| Canvas / SVG for bars | Fraction bars are axis-aligned rectangles. CSS flexbox renders them natively with zero hit-detection code. Canvas would require manual layout math and tap coordinate mapping. SVG is viable but adds DOM weight for something flex does trivially. |
-| Tailwind CSS | Works well for content layouts but the manipulative requires precise control: exact pixel borders between segments, calculated flex ratios for unequal splits, animation-coordinated styles. CSS Modules give direct control without fighting utility class abstractions. |
-| React Native | Capacitor lets you write standard React with standard CSS and deploy to iPad. React Native requires a different component set (View, Text, StyleSheet), different animation primitives (Animated, Reanimated), and different gesture handling (react-native-gesture-handler). The trade-off only pays off if you need deep native integration, which this app doesn't. |
-| GPT-4o-mini | Claude Haiku is faster for this use case and the Anthropic API has simpler streaming semantics. Either model would work — the safety-net task (short redirects and single-tag classification) is simple enough that model choice is a cost/latency decision, not a capability one. |
-| No LLM (pure script) | Viable — the app works fully without the LLM using scripted dialogue alone. But a pure script can't handle every possible manipulative state a student might create. Without the LLM safety net, unrecognized actions fall through to a generic "try again" message, which feels robotic after the second time. The LLM also enables misconception classification without hand-coding every possible error pattern. Cost is negligible (a few LLM calls per session at fractions of a cent each). |
-| Firebase / Supabase | No user accounts, no shared data, no real-time sync needed. Lesson progress is local (Capacitor Preferences). Adding a backend database is premature for a single-lesson app. |
+| Next.js / Remix | Single-page, single-lesson app with no routing, no SSR, no SEO needs. Vite + React is the minimal correct choice. |
+| Redux / Zustand | One reducer (fraction state) and one custom hook (lesson runner). React's built-in `useReducer` + hooks handle it. |
+| Canvas / SVG for bars | Fraction bars are axis-aligned rectangles. CSS flexbox renders them natively with zero hit-detection code. |
+| SVG-only for circles | Circles ARE SVG — wedge paths drawn with `M / L / A` commands. Hit detection on the wedge SVG element fires React pointer events directly. |
+| Tailwind CSS | The manipulative wants precise pixel control over segment sizing, borders, and animation coordination. CSS Modules give that without fighting utility class abstractions. |
+| React Native | A web app deploys to every screen size with one codebase. React Native would require a parallel component set, different gesture handling, and different animation primitives — only worth it for deep native integration the app doesn't need. |
+| LLM-driven tutoring | The script covers the lesson surface comprehensively (~100 nodes). Adding an LLM trades determinism, accessibility, and offline-friendliness for marginal flexibility. The earlier safety-net version was removed. |
+| Firebase / Supabase | No user accounts, no shared data, no real-time sync. Lesson progress is browser-local (sessionStorage). |
