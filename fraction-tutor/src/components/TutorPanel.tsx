@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { TutorMessage, LessonNode } from "../engine/types";
 import styles from "../styles/TutorPanel.module.css";
 
@@ -27,6 +27,31 @@ export function TutorPanel({
     (currentNode.type === "prompt" || currentNode.type === "check") &&
     currentNode.options &&
     currentNode.options.length > 0;
+
+  // Shuffle the option order each time we land on a new prompt/check
+  // node so the correct answer isn't always first. "Give up" options
+  // (e.g. "I am not sure", "I cannot tell") stay pinned to the bottom
+  // — they're the last-resort path, not a regular answer choice. We
+  // shuffle indices into the original options array so onOptionSelect
+  // still routes to the right `next`.
+  const shuffledOptionIndices = useMemo(() => {
+    if (!currentNode?.options) return [];
+    const giveUp: number[] = [];
+    const candidates: number[] = [];
+    currentNode.options.forEach((opt, i) => {
+      if (/i\s*(am\s+not|cannot|can'?t|'m\s+not)\s+(sure|tell)/i.test(opt.label)) {
+        giveUp.push(i);
+      } else {
+        candidates.push(i);
+      }
+    });
+    for (let j = candidates.length - 1; j > 0; j--) {
+      const k = Math.floor(Math.random() * (j + 1));
+      [candidates[j], candidates[k]] = [candidates[k], candidates[j]];
+    }
+    return [...candidates, ...giveUp];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentNode?.id]);
 
   // Show only the latest tutor message — no chat history, no student
   // echoes. The student's "answer" is whichever option button they tap.
@@ -86,15 +111,18 @@ export function TutorPanel({
 
       <div className={styles.actions}>
         {showOptions &&
-          currentNode.options!.map((opt, i) => (
-            <button
-              key={i}
-              className={styles.optionButton}
-              onClick={() => onOptionSelect(i)}
-            >
-              {opt.label}
-            </button>
-          ))}
+          shuffledOptionIndices.map((origIdx) => {
+            const opt = currentNode.options![origIdx];
+            return (
+              <button
+                key={origIdx}
+                className={styles.optionButton}
+                onClick={() => onOptionSelect(origIdx)}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
 
         {hasContinue && (
           <button
