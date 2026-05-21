@@ -2,8 +2,25 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { LayoutGroup } from "framer-motion";
 import { Segment } from "./Segment";
 import { barToFraction, fractionToString } from "../engine/conditions";
-import type { FractionBar as FractionBarType } from "../engine/types";
+import type { BarColor, FractionBar as FractionBarType } from "../engine/types";
 import styles from "../styles/FractionBar.module.css";
+
+// Tints used on an unshaded bar's outline so kids can recognize
+// e.g. "the blue bar" before any pieces are colored. Kept low-alpha
+// so they don't compete visually with a fully shaded segment.
+const BORDER_TINT: Record<BarColor, string> = {
+  teal: "rgba(93, 202, 165, 0.55)",
+  blue: "rgba(133, 183, 235, 0.55)",
+  coral: "rgba(240, 153, 123, 0.55)",
+  purple: "rgba(175, 169, 236, 0.55)",
+};
+
+const BG_TINT: Record<BarColor, string> = {
+  teal: "rgba(93, 202, 165, 0.08)",
+  blue: "rgba(133, 183, 235, 0.08)",
+  coral: "rgba(240, 153, 123, 0.08)",
+  purple: "rgba(175, 169, 236, 0.08)",
+};
 
 type FractionBarProps = {
   bar: FractionBarType;
@@ -58,7 +75,13 @@ export function FractionBar({
       >
         {label}
       </span>
-      <div className={`${styles.bar} ${pulse ? styles.barPulse : ""}`}>
+      <div
+        className={`${styles.bar} ${pulse ? styles.barPulse : ""}`}
+        style={{
+          borderColor: BORDER_TINT[bar.color],
+          background: BG_TINT[bar.color],
+        }}
+      >
         <LayoutGroup id={bar.id}>
           {bar.segments.map((seg, i) => (
             <Segment
