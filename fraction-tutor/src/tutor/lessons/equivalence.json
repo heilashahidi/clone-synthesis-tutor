@@ -805,42 +805,24 @@
     },
     "play_intro": {
       "id": "play_intro",
-      "type": "message",
-      "message": "Now it is your turn to play! You are going to build your own fractions and see if you can make them match.",
-      "next": "play_add_bar_teach",
+      "type": "wait_for_action",
+      "message": "Your turn to play! Double-tap the empty space below to add your first bar.",
       "setup": {
         "bars": [],
         "circles": []
-      }
-    },
-    "play_add_bar_teach": {
-      "id": "play_add_bar_teach",
-      "type": "message",
-      "message": "First, let's add a bar. Tap the empty space twice to create a new one!",
-      "next": "play_add_bar_wait"
-    },
-    "play_add_bar_wait": {
-      "id": "play_add_bar_wait",
-      "type": "wait_for_action",
-      "message": "Tap the empty space twice to add a bar.",
+      },
       "condition": {
         "type": "action_performed",
         "action": "ADD_BAR"
       },
-      "onMet": "play_add_bar_confirm",
-      "hint": "Double-tap the open area below to make a new bar!",
+      "onMet": "play_build_half_wait",
+      "hint": "Double-tap anywhere in the open area to make a new bar!",
       "hintDelay": 10
-    },
-    "play_add_bar_confirm": {
-      "id": "play_add_bar_confirm",
-      "type": "message",
-      "message": "There it is! You made a brand new bar. Now cut it and color it to build 1/2.",
-      "next": "play_build_half_wait"
     },
     "play_build_half_wait": {
       "id": "play_build_half_wait",
       "type": "wait_for_action",
-      "message": "Cut the bar into 2 pieces and color 1 of them to make 1/2.",
+      "message": "There it is! Now cut the bar into 2 pieces and color 1 of them to make 1/2.",
       "condition": {
         "type": "fraction_equals",
         "barIndex": 0,
@@ -849,39 +831,27 @@
           "denominator": 2
         }
       },
-      "onMet": "play_build_half_confirm",
+      "onMet": "play_add_equiv_wait",
       "hint": "Double-tap to cut, then single-tap one piece to color it!",
       "hintDelay": 15,
       "llmFallthrough": true
     },
-    "play_build_half_confirm": {
-      "id": "play_build_half_confirm",
-      "type": "message",
-      "message": "You built 1/2 all by yourself! Now here is the challenge. Add another bar and build a fraction equivalent to 1/2.",
-      "next": "play_add_equiv_wait"
-    },
     "play_add_equiv_wait": {
       "id": "play_add_equiv_wait",
       "type": "wait_for_action",
-      "message": "Tap the empty space twice to add a second bar.",
+      "message": "You built 1/2! Now add another bar to build a fraction equivalent to 1/2. Double-tap the empty space.",
       "condition": {
         "type": "action_performed",
         "action": "ADD_BAR"
       },
-      "onMet": "play_build_equiv_instruct",
+      "onMet": "play_build_equiv_wait",
       "hint": "Double-tap the open area to add another bar!",
       "hintDelay": 10
-    },
-    "play_build_equiv_instruct": {
-      "id": "play_build_equiv_instruct",
-      "type": "message",
-      "message": "Great! Now cut and color this new bar to make it equivalent to 1/2. It could be 2/4, 3/6, or anything that matches!",
-      "next": "play_build_equiv_wait"
     },
     "play_build_equiv_wait": {
       "id": "play_build_equiv_wait",
       "type": "wait_for_action",
-      "message": "Build a fraction equivalent to 1/2 on the second bar.",
+      "message": "Now cut and color this new bar so it's equivalent to 1/2. Try 2/4, 3/6, or anything that matches!",
       "condition": {
         "type": "fraction_equals",
         "barIndex": 1,
@@ -898,73 +868,49 @@
     "play_equiv_celebrate": {
       "id": "play_equiv_celebrate",
       "type": "message",
-      "message": "Look at that! The colored parts line up. You built two equivalent fractions all on your own! Wonderful job!",
-      "next": "play_smash_teach"
-    },
-    "play_smash_teach": {
-      "id": "play_smash_teach",
-      "type": "message",
-      "message": "Now let's learn one more move. You can smash a bar to get rid of it. Hold down on a bar until it breaks apart!",
+      "message": "Look at that! The colored parts line up. You built two equivalent fractions on your own!",
       "next": "play_smash_wait"
     },
     "play_smash_wait": {
       "id": "play_smash_wait",
       "type": "wait_for_action",
-      "message": "Hold down on a bar to smash it.",
+      "message": "Time for a new move — you can smash a bar to get rid of it. Hold down on a bar until it breaks apart!",
       "condition": {
         "type": "action_performed",
         "action": "SMASH"
       },
-      "onMet": "play_smash_confirm",
+      "onMet": "play_smash_second_wait",
       "hint": "Press and hold on any bar until it breaks!",
       "hintDelay": 10
-    },
-    "play_smash_confirm": {
-      "id": "play_smash_confirm",
-      "type": "message",
-      "message": "You smashed it! That feels good, right? Smash the other one too so we can start fresh.",
-      "next": "play_smash_second_wait"
     },
     "play_smash_second_wait": {
       "id": "play_smash_second_wait",
       "type": "wait_for_action",
-      "message": "Smash the last bar to clear the screen.",
+      "message": "Nice! Smash the other one too so we can start fresh.",
       "condition": {
         "type": "action_performed",
         "action": "SMASH"
       },
-      "onMet": "play_circle_intro",
+      "onMet": "play_add_circle_wait",
       "hint": "Hold down on the bar to smash it!",
       "hintDelay": 8
-    },
-    "play_circle_intro": {
-      "id": "play_circle_intro",
-      "type": "message",
-      "message": "Now let's build with circles! Tap the empty space twice to add a circle.",
-      "next": "play_add_circle_wait"
     },
     "play_add_circle_wait": {
       "id": "play_add_circle_wait",
       "type": "wait_for_action",
-      "message": "Double-tap the empty space to add a circle.",
+      "message": "Now let's build with circles! Double-tap the empty space to add a circle.",
       "condition": {
         "type": "action_performed",
         "action": "ADD_CIRCLE"
       },
-      "onMet": "play_add_circle_confirm",
+      "onMet": "play_build_twothirds_wait",
       "hint": "Tap the open area twice to create a circle!",
       "hintDelay": 10
-    },
-    "play_add_circle_confirm": {
-      "id": "play_add_circle_confirm",
-      "type": "message",
-      "message": "There is your circle! Now cut it into 3 slices and color 2 of them to build 2/3.",
-      "next": "play_build_twothirds_wait"
     },
     "play_build_twothirds_wait": {
       "id": "play_build_twothirds_wait",
       "type": "wait_for_action",
-      "message": "Build 2/3 on the circle. Cut into 3 slices and color 2.",
+      "message": "There's your circle! Cut it into 3 slices and color 2 to build 2/3.",
       "condition": {
         "type": "fraction_equals",
         "circleIndex": 0,
@@ -973,39 +919,27 @@
           "denominator": 3
         }
       },
-      "onMet": "play_circle_equiv_setup",
+      "onMet": "play_add_circle_2_wait",
       "hint": "Double-tap to cut slices, then single-tap 2 slices to color them!",
       "hintDelay": 15,
       "llmFallthrough": true
     },
-    "play_circle_equiv_setup": {
-      "id": "play_circle_equiv_setup",
-      "type": "message",
-      "message": "You built 2/3 with a circle! Now add another circle and make it equivalent to 2/3.",
-      "next": "play_add_circle_2_wait"
-    },
     "play_add_circle_2_wait": {
       "id": "play_add_circle_2_wait",
       "type": "wait_for_action",
-      "message": "Double-tap to add another circle.",
+      "message": "You built 2/3 with a circle! Now add another circle so you can build a fraction equivalent to 2/3.",
       "condition": {
         "type": "action_performed",
         "action": "ADD_CIRCLE"
       },
-      "onMet": "play_circle_equiv_instruct",
+      "onMet": "play_circle_equiv_wait",
       "hint": "Tap the open area twice!",
       "hintDelay": 10
-    },
-    "play_circle_equiv_instruct": {
-      "id": "play_circle_equiv_instruct",
-      "type": "message",
-      "message": "Now cut and color this circle to make it equivalent to 2/3. Remember, the colored areas need to be the same size!",
-      "next": "play_circle_equiv_wait"
     },
     "play_circle_equiv_wait": {
       "id": "play_circle_equiv_wait",
       "type": "wait_for_action",
-      "message": "Build a fraction equivalent to 2/3 on the second circle.",
+      "message": "Cut and color this circle to make it equivalent to 2/3. The colored areas should be the same size!",
       "condition": {
         "type": "fraction_equals",
         "circleIndex": 1,
@@ -1014,21 +948,15 @@
           "denominator": 3
         }
       },
-      "onMet": "play_circle_equiv_celebrate",
+      "onMet": "play_smash_circle_1_wait",
       "hint": "Try 4/6! Cut into 6 slices and color 4.",
       "hintDelay": 20,
       "llmFallthrough": true
     },
-    "play_circle_equiv_celebrate": {
-      "id": "play_circle_equiv_celebrate",
-      "type": "message",
-      "message": "Amazing! Both circles have the same amount colored. You built equivalent fractions with circles! Now smash them both.",
-      "next": "play_smash_circle_1_wait"
-    },
     "play_smash_circle_1_wait": {
       "id": "play_smash_circle_1_wait",
       "type": "wait_for_action",
-      "message": "Hold down on a circle to smash it.",
+      "message": "Amazing! Both circles show the same amount. Now hold down on a circle to smash it.",
       "condition": {
         "type": "action_performed",
         "action": "SMASH"
@@ -1045,38 +973,26 @@
         "type": "action_performed",
         "action": "SMASH"
       },
-      "onMet": "play_mix_intro",
+      "onMet": "play_mix_add_bar_wait",
       "hint": "Hold down to smash the last circle!",
       "hintDelay": 8
-    },
-    "play_mix_intro": {
-      "id": "play_mix_intro",
-      "type": "message",
-      "message": "Here is the big challenge. Can you show the same fraction as a bar AND a circle at the same time?",
-      "next": "play_mix_add_bar_wait"
     },
     "play_mix_add_bar_wait": {
       "id": "play_mix_add_bar_wait",
       "type": "wait_for_action",
-      "message": "Start by adding a bar. Double-tap the empty space.",
+      "message": "Big challenge! Can you show the same fraction as both a bar AND a circle? Start by double-tapping to add a bar.",
       "condition": {
         "type": "action_performed",
         "action": "ADD_BAR"
       },
-      "onMet": "play_mix_build_bar",
+      "onMet": "play_mix_bar_wait",
       "hint": "Tap the open area twice to add a bar!",
       "hintDelay": 10
-    },
-    "play_mix_build_bar": {
-      "id": "play_mix_build_bar",
-      "type": "message",
-      "message": "Now build any fraction you want on the bar. You get to choose! How about 1/3?",
-      "next": "play_mix_bar_wait"
     },
     "play_mix_bar_wait": {
       "id": "play_mix_bar_wait",
       "type": "wait_for_action",
-      "message": "Build 1/3 on the bar. Cut into 3 pieces and color 1.",
+      "message": "Now build 1/3 on the bar — cut into 3 pieces and color 1.",
       "condition": {
         "type": "fraction_equals",
         "barIndex": 0,
@@ -1085,39 +1001,27 @@
           "denominator": 3
         }
       },
-      "onMet": "play_mix_bar_confirm",
+      "onMet": "play_mix_add_circle_wait",
       "hint": "Double-tap to cut into 3 pieces, then tap 1 piece to color it!",
       "hintDelay": 15,
       "llmFallthrough": true
     },
-    "play_mix_bar_confirm": {
-      "id": "play_mix_bar_confirm",
-      "type": "message",
-      "message": "You built 1/3 on a bar! Now add a circle and build the same amount on it.",
-      "next": "play_mix_add_circle_wait"
-    },
     "play_mix_add_circle_wait": {
       "id": "play_mix_add_circle_wait",
       "type": "wait_for_action",
-      "message": "Double-tap to add a circle.",
+      "message": "You built 1/3 on a bar! Now add a circle to show the same amount.",
       "condition": {
         "type": "action_performed",
         "action": "ADD_CIRCLE"
       },
-      "onMet": "play_mix_circle_instruct",
+      "onMet": "play_mix_circle_wait",
       "hint": "Tap the open area twice to add a circle!",
       "hintDelay": 10
-    },
-    "play_mix_circle_instruct": {
-      "id": "play_mix_circle_instruct",
-      "type": "message",
-      "message": "Now build a fraction equivalent to 1/3 on the circle. It could be 1/3, 2/6, or anything that shows the same amount!",
-      "next": "play_mix_circle_wait"
     },
     "play_mix_circle_wait": {
       "id": "play_mix_circle_wait",
       "type": "wait_for_action",
-      "message": "Build a fraction equivalent to 1/3 on the circle.",
+      "message": "Now build a fraction equivalent to 1/3 on the circle. It could be 1/3, 2/6, or anything that shows the same amount!",
       "condition": {
         "type": "fraction_equals",
         "circleIndex": 0,

@@ -25,6 +25,42 @@
   --border-color: rgba(255, 255, 255, 0.08);
 }
 
+/* When the user is mid-long-press on any segment (data-holding="true"),
+   show the WHOLE bar charging up — so it's obvious the smash will take
+   out the entire thing, not just the held piece. :has() lets the bar
+   react to its child segment's holding state without lifting React
+   state up. */
+.bar:has([data-holding="true"]) {
+  animation: barCharge 0.55s ease-in forwards;
+}
+
+@keyframes barCharge {
+  0% {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    transform: scale(1);
+  }
+  60% {
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.5),
+      0 0 0 5px rgba(255, 150, 50, 0.5),
+      0 0 28px rgba(255, 150, 50, 0.55);
+    transform: scale(1.012) translateX(-1px);
+  }
+  70% {
+    transform: scale(1.012) translateX(1px);
+  }
+  80% {
+    transform: scale(1.012) translateX(-1px);
+  }
+  100% {
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.5),
+      0 0 0 6px rgba(255, 180, 60, 0.9),
+      0 0 36px rgba(255, 150, 50, 0.7);
+    transform: scale(1.012);
+  }
+}
+
 .barPulse {
   animation: barPulse 0.5s cubic-bezier(0.2, 0.8, 0.3, 1);
 }

@@ -189,6 +189,7 @@ export function Segment({
   return (
     <motion.div
       data-segment-id={id}
+      data-holding={isHolding ? "true" : undefined}
       drag
       dragMomentum={false}
       dragConstraints={dragBoundsRef}
