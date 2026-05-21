@@ -13,6 +13,7 @@ type FractionWorkspaceProps = {
   bars: FractionBarType[];
   circles: FractionCircleType[];
   selectedSegmentId: string | null;
+  showBarLabels?: boolean;
   onSegmentTap: (barId: string, segmentId: string) => void;
   onSegmentDoubleTap: (barId: string, segmentId: string) => void;
   onSegmentLongPress: (barId: string, segmentId: string) => void;
@@ -24,17 +25,24 @@ type FractionWorkspaceProps = {
     dropTargetId: string | null
   ) => boolean;
   onEmptyDoubleTap: () => void;
+  onCircleTap?: (circleId: string) => void;
+  onCircleDoubleTap?: (circleId: string) => void;
+  onCircleLongPress?: (circleId: string) => void;
 };
 
 export function FractionWorkspace({
   bars,
   circles,
   selectedSegmentId,
+  showBarLabels = true,
   onSegmentTap,
   onSegmentDoubleTap,
   onSegmentLongPress,
   onSegmentDragEnd,
   onEmptyDoubleTap,
+  onCircleTap,
+  onCircleDoubleTap,
+  onCircleLongPress,
 }: FractionWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const lastClickTime = useRef(0);
@@ -68,6 +76,7 @@ export function FractionWorkspace({
           bar={bar}
           selectedSegmentId={selectedSegmentId}
           dragBoundsRef={workspaceRef}
+          showLabel={showBarLabels}
           onSegmentTap={onSegmentTap}
           onSegmentDoubleTap={onSegmentDoubleTap}
           onSegmentLongPress={onSegmentLongPress}
@@ -77,7 +86,13 @@ export function FractionWorkspace({
       {circles.length > 0 && (
         <div className={styles.circleRow}>
           {circles.map((c) => (
-            <FractionCircle key={c.id} circle={c} />
+            <FractionCircle
+              key={c.id}
+              circle={c}
+              onTap={onCircleTap}
+              onDoubleTap={onCircleDoubleTap}
+              onLongPress={onCircleLongPress}
+            />
           ))}
         </div>
       )}

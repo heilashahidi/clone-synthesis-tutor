@@ -1,4 +1,4 @@
-import type { FractionBar, Fraction, LessonCondition } from "./types";
+import type { FractionBar, FractionCircle, Fraction, LessonCondition } from "./types";
 
 /**
  * Extract the fraction a bar currently represents.
@@ -49,16 +49,46 @@ export function fractionToString(f: Fraction): string {
  * Only `fraction_equals` is evaluable against state; `action_performed`
  * is event-driven and handled separately by the lesson runner.
  */
+function circleToFraction(c: FractionCircle): Fraction {
+  return { numerator: c.shaded, denominator: c.slices };
+}
+
 export function checkCondition(
   condition: LessonCondition,
-  bars: FractionBar[]
+  bars: FractionBar[],
+  circles: FractionCircle[] = []
 ): boolean {
   if (condition.type === "fraction_equals") {
-    const bar = bars[condition.barIndex];
-    if (!bar) return false;
-
-    const current = barToFraction(bar);
+    const current = pickFraction(condition, bars, circles);
+    if (!current) return false;
     return fractionsEqual(current, condition.target);
   }
+  if (condition.type === "fraction_exact") {
+    const current = pickFraction(condition, bars, circles);
+    if (!current) return false;
+    return (
+      current.numerator === condition.target.numerator &&
+      current.denominator === condition.target.denominator
+    );
+  }
+  if (condition.type === "screen_clear") {
+    return bars.length === 0 && circles.length === 0;
+  }
   return false;
+}
+
+function pickFraction(
+  condition: { barIndex?: number; circleIndex?: number },
+  bars: FractionBar[],
+  circles: FractionCircle[]
+): Fraction | null {
+  if (typeof condition.circleIndex === "number") {
+    const c = circles[condition.circleIndex];
+    return c ? circleToFraction(c) : null;
+  }
+  if (typeof condition.barIndex === "number") {
+    const b = bars[condition.barIndex];
+    return b ? barToFraction(b) : null;
+  }
+  return null;
 }

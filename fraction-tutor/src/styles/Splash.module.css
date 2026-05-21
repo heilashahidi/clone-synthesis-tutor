@@ -5,10 +5,10 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background-color: #0a0a0a;
+  background-color: #0E0F14;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
   background-size: 40px 40px;
   z-index: 1000;
   animation: fadeIn 0.4s ease;
@@ -18,24 +18,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
   padding: 48px 56px;
   background: rgba(24, 24, 27, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
+  border-radius: 28px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  max-width: 440px;
+  max-width: 460px;
   text-align: center;
   animation: pop 0.4s cubic-bezier(0.2, 0.8, 0.3, 1.2);
 }
 
+.sparkle {
+  font-size: 56px;
+  line-height: 1;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 18px rgba(167, 139, 250, 0.55));
+  animation: sparklePulse 2.4s ease-in-out infinite;
+}
+
 .title {
-  font-size: 36px;
-  font-weight: 500;
+  font-family: "Nunito", system-ui, sans-serif;
+  font-size: 42px;
+  font-weight: 900;
   color: #fafafa;
   margin: 0;
   letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .subtitle {
@@ -46,26 +59,37 @@
 }
 
 .button {
-  margin-top: 12px;
-  padding: 14px 56px;
+  margin-top: 14px;
+  padding: 16px 64px;
   font-size: 18px;
-  font-weight: 500;
-  color: #93c5fd;
-  background: rgba(96, 165, 250, 0.18);
-  border: 1px solid rgba(96, 165, 250, 0.45);
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 55%, #f472b6 100%);
+  border: none;
   border-radius: 999px;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.15s, transform 0.1s;
+  box-shadow:
+    0 10px 24px rgba(167, 139, 250, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .button:hover {
-  background: rgba(96, 165, 250, 0.26);
+  filter: brightness(1.06);
+  box-shadow:
+    0 12px 28px rgba(167, 139, 250, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .button:active {
   transform: scale(0.97);
+}
+
+@keyframes sparklePulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 4px 18px rgba(167, 139, 250, 0.55)); }
+  50%      { transform: scale(1.08); filter: drop-shadow(0 6px 22px rgba(244, 114, 182, 0.6)); }
 }
 
 @keyframes fadeIn {

@@ -19,6 +19,7 @@ export function Splash({ title, description, onStart }: SplashProps) {
   return (
     <div className={styles.overlay}>
       <div className={styles.card}>
+        <div className={styles.sparkle} aria-hidden="true">✦</div>
         <h1 className={styles.title}>{title}</h1>
         <p className={styles.subtitle}>{description}</p>
         <button type="button" className={styles.button} onClick={onStart}>

@@ -67,7 +67,38 @@ export const initialState: ManipulativeState = {
 
 // ── Reducer ─────────────────────────────────────────────────────────
 
+// Safety net: force every bar's shaded segments to be packed at the
+// left. Preserves segment IDs (and any drag offsets), only reassigns
+// the `shaded` flag based on the total count. The SHADE rule already
+// enforces this at the action level — this normalization is here so a
+// bar can never end up visually non-contiguous even if some path
+// slipped past the rule.
+function normalizeBars(state: ManipulativeState): ManipulativeState {
+  let changed = false;
+  const bars = state.bars.map((bar) => {
+    const shadedCount = bar.segments.filter((s) => s.shaded).length;
+    let barChanged = false;
+    const segments = bar.segments.map((s, i) => {
+      const wantShaded = i < shadedCount;
+      if (s.shaded === wantShaded) return s;
+      barChanged = true;
+      return { ...s, shaded: wantShaded };
+    });
+    if (!barChanged) return bar;
+    changed = true;
+    return { ...bar, segments };
+  });
+  return changed ? { ...state, bars } : state;
+}
+
 export function fractionReducer(
+  state: ManipulativeState,
+  action: ManipulativeAction
+): ManipulativeState {
+  return normalizeBars(fractionReducerInner(state, action));
+}
+
+function fractionReducerInner(
   state: ManipulativeState,
   action: ManipulativeAction
 ): ManipulativeState {
@@ -108,8 +139,13 @@ export function fractionReducer(
       // The shaded portion of a bar must stay contiguous from the
       // left — so the visual fraction always matches the math
       // fraction (e.g., 2/4 is always the left half, never two
-      // scattered pieces). Enforce that here, not in handlers, so
-      // no client-side path can bypass it.
+      // scattered pieces). But we DON'T reject taps on the "wrong"
+      // block — that produced silent no-ops which kids read as a
+      // broken UI. Instead, any tap on an unshaded block adds one
+      // to the shaded count (fills the next slot from the left),
+      // and any tap on a shaded block removes one (clears the
+      // rightmost shaded). normalizeBars below packs them to the
+      // left for the visual.
       return {
         ...state,
         bars: state.bars.map((bar) => {
@@ -119,28 +155,17 @@ export function fractionReducer(
           );
           if (segIdx < 0) return bar;
           const seg = bar.segments[segIdx];
-          if (seg.shaded) {
-            // Un-shading: only the rightmost shaded piece may flip.
-            let rightmostShadedIdx = -1;
-            for (let i = bar.segments.length - 1; i >= 0; i--) {
-              if (bar.segments[i].shaded) {
-                rightmostShadedIdx = i;
-                break;
-              }
-            }
-            if (segIdx !== rightmostShadedIdx) return bar;
-          } else {
-            // Shading: only the leftmost unshaded piece may flip.
-            const leftmostUnshadedIdx = bar.segments.findIndex(
-              (s) => !s.shaded
-            );
-            if (segIdx !== leftmostUnshadedIdx) return bar;
-          }
+          const currentCount = bar.segments.filter((s) => s.shaded).length;
+          const newCount = seg.shaded
+            ? Math.max(0, currentCount - 1)
+            : Math.min(bar.segments.length, currentCount + 1);
+          if (newCount === currentCount) return bar;
           return {
             ...bar,
-            segments: bar.segments.map((s) =>
-              s.id === action.segmentId ? { ...s, shaded: !s.shaded } : s
-            ),
+            segments: bar.segments.map((s, i) => ({
+              ...s,
+              shaded: i < newCount,
+            })),
           };
         }),
       };
@@ -185,13 +210,63 @@ export function fractionReducer(
       };
     }
 
+    case "ADD_CIRCLE": {
+      const newCircle = createCircle(1, 0, action.color);
+      return {
+        ...state,
+        circles: [...state.circles, newCircle],
+      };
+    }
+
+    case "SPLIT_CIRCLE": {
+      return {
+        ...state,
+        circles: state.circles.map((c) => {
+          if (c.id !== action.circleId) return c;
+          // Splitting increases slice count by 1. Shaded count stays
+          // the same (the previously-colored area gets divided up
+          // among the new finer slices — visually it shrinks unless
+          // the student colors more).
+          return { ...c, slices: c.slices + 1 };
+        }),
+      };
+    }
+
+    case "SHADE_CIRCLE": {
+      return {
+        ...state,
+        circles: state.circles.map((c) => {
+          if (c.id !== action.circleId) return c;
+          // Each tap cycles the shaded count up by 1; when all wedges
+          // are shaded the next tap wraps back to 0. So a kid who
+          // over-shades can keep tapping to come back around.
+          return { ...c, shaded: (c.shaded + 1) % (c.slices + 1) };
+        }),
+      };
+    }
+
+    case "SMASH": {
+      if (action.targetType === "bar") {
+        return {
+          ...state,
+          bars: state.bars.filter((b) => b.id !== action.id),
+        };
+      }
+      return {
+        ...state,
+        circles: state.circles.filter((c) => c.id !== action.id),
+      };
+    }
+
     case "RESET": {
       resetCounters();
       return { ...initialState };
     }
 
     case "SET_STATE": {
-      resetCounters();
+      // Don't reset counters — the action.bars were already created
+      // with fresh IDs by processNode, and resetting now would just
+      // make any LATER createBar collide with these.
       return {
         ...state,
         bars: action.bars,

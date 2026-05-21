@@ -29,8 +29,8 @@ export function equivalenceStep(nodeId: string): number {
   if (nodeId.startsWith("non_example_")) return 5;
   // 6 — same idea with circles (1/2 ≡ 2/4, 2/3 ≡ 4/6, 1/2 vs 1/3)
   if (nodeId.startsWith("circle_")) return 6;
-  // 7 — assessment quiz
-  if (nodeId.startsWith("assessment_") || nodeId.startsWith("quiz_")) return 7;
+  // 7 — playground: kids build their own equivalent fractions
+  if (nodeId.startsWith("play_")) return 7;
   // 8 — done
   if (nodeId === "complete") return 8;
   return 1;

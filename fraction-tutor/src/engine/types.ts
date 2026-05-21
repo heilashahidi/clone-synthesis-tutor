@@ -41,6 +41,10 @@ export type ManipulativeAction =
   | { type: "SHADE"; barId: string; segmentId: string }
   | { type: "COMBINE"; barId: string; segmentId: string }
   | { type: "ADD_BAR"; color: BarColor }
+  | { type: "ADD_CIRCLE"; color: BarColor }
+  | { type: "SPLIT_CIRCLE"; circleId: string }
+  | { type: "SHADE_CIRCLE"; circleId: string }
+  | { type: "SMASH"; targetType: "bar" | "circle"; id: string }
   | { type: "RESET" }
   | { type: "SET_STATE"; bars: FractionBar[]; circles: FractionCircle[] }
   | { type: "SELECT"; barId: string; segmentId: string }
@@ -65,16 +69,20 @@ export type Fraction = {
 // ── Lesson Types ────────────────────────────────────────────────────
 
 export type LessonCondition =
-  | { type: "fraction_equals"; barIndex: number; target: Fraction }
+  | { type: "fraction_equals"; barIndex?: number; circleIndex?: number; target: Fraction }
+  | { type: "fraction_exact"; barIndex?: number; circleIndex?: number; target: Fraction }
+  | { type: "screen_clear" }
   | {
       type: "action_performed";
       action:
         | "ADD_BAR"
+        | "ADD_CIRCLE"
         | "SHADE"
         | "SPLIT"
         | "COMBINE"
         | "MOVE_SEGMENT"
-        | "REMOVE_SEGMENT";
+        | "REMOVE_SEGMENT"
+        | "SMASH";
     };
 
 export type TutorialActionTrigger = Extract<
@@ -117,6 +125,23 @@ export type LessonNode = {
   // are allowed. message / prompt / check nodes always lock all
   // gestures (the only way forward is the Continue / option buttons).
   allowedActions?: TutorialActionTrigger[];
+
+  // When true, the `setup` dispatch is deferred until after the tutor
+  // voice finishes speaking the node's message (with a small padding).
+  // If voice is muted or unavailable, a fixed fallback delay is used.
+  // Use this for "watch what happens" dramatic reveals.
+  setupAfterMessage?: boolean;
+
+  // Apply `setup` this many milliseconds after entering the node
+  // (regardless of voice). Use when you want the manipulative to
+  // change during a specific moment of the spoken line — tuned so
+  // the cut/reveal lands toward the end of the voice playback.
+  setupDelayMs?: number;
+
+  // When true, FractionBar labels (e.g. "1/2") are hidden on this
+  // node. Use on prompt/check nodes that ask the student to name the
+  // visible fraction — otherwise the on-screen label gives it away.
+  hideFractionLabels?: boolean;
 
   // Setup: configure the manipulative at this step. A node sets up
   // bars, circles, or both — whichever it doesn't list is cleared.

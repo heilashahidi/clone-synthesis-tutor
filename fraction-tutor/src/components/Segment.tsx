@@ -16,11 +16,12 @@ const COLOR_MAP: Record<BarColor, { shaded: string; text: string }> = {
 };
 
 const LONG_PRESS_MS = 500;
-// Wider than the typical 250–280 ms so younger kids tapping a
-// piece "twice quickly" actually register as a double-tap (which
-// fires SPLIT) instead of two single taps (which would just toggle
-// SHADE on and off).
-const DOUBLE_TAP_MS = 400;
+// 280 ms is the standard double-tap window. Originally widened to
+// 400 ms to help younger kids land a double-tap for SPLIT, but that
+// also meant SHADE took 400 ms to apply — so two quick single-taps
+// looked like one tap colored both blocks. 280 ms keeps double-tap
+// usable while making single-tap feedback noticeably snappier.
+const DOUBLE_TAP_MS = 280;
 
 type SegmentProps = {
   id: string;
@@ -187,7 +188,6 @@ export function Segment({
 
   return (
     <motion.div
-      layoutId={id}
       data-segment-id={id}
       drag
       dragMomentum={false}

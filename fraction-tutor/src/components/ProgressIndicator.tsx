@@ -15,6 +15,10 @@ export function ProgressIndicator({
   muted,
   onToggleMute,
 }: ProgressIndicatorProps) {
+  const fillPct = isComplete
+    ? 100
+    : Math.max(0, Math.min(100, (step / totalSteps) * 100));
+
   return (
     <div className={styles.container}>
       <span className={styles.title}>Fraction explorer</span>
@@ -28,9 +32,23 @@ export function ProgressIndicator({
         >
           {muted ? <MutedIcon /> : <SpeakerIcon />}
         </button>
-        <span className={styles.step}>
-          {isComplete ? "Complete" : `Step ${step} of ${totalSteps}`}
-        </span>
+        <div className={styles.progressGroup}>
+          <span className={styles.step}>
+            {isComplete ? "Complete" : `Step ${step} of ${totalSteps}`}
+          </span>
+          <div
+            className={styles.progressTrack}
+            role="progressbar"
+            aria-valuenow={isComplete ? totalSteps : step}
+            aria-valuemin={0}
+            aria-valuemax={totalSteps}
+          >
+            <div
+              className={styles.progressFill}
+              style={{ width: `${fillPct}%` }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

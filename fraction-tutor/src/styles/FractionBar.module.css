@@ -18,9 +18,30 @@
   flex: 1;
   display: flex;
   height: 100px;
-  border-radius: 14px;
+  border-radius: 22px;
   border: 1px solid #3f3f46;
   background: rgba(255, 255, 255, 0.02);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   --border-color: rgba(255, 255, 255, 0.08);
+}
+
+.barPulse {
+  animation: barPulse 0.5s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes barPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+  45% {
+    transform: scale(1.018);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.5),
+      0 0 0 4px rgba(167, 139, 250, 0.22);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
 }

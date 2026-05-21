@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { LayoutGroup } from "framer-motion";
 import { Segment } from "./Segment";
 import { barToFraction, fractionToString } from "../engine/conditions";
@@ -9,6 +9,7 @@ type FractionBarProps = {
   bar: FractionBarType;
   selectedSegmentId: string | null;
   dragBoundsRef: RefObject<HTMLDivElement | null>;
+  showLabel?: boolean;
   onSegmentTap: (barId: string, segmentId: string) => void;
   onSegmentDoubleTap: (barId: string, segmentId: string) => void;
   onSegmentLongPress: (barId: string, segmentId: string) => void;
@@ -25,6 +26,7 @@ export function FractionBar({
   bar,
   selectedSegmentId,
   dragBoundsRef,
+  showLabel = true,
   onSegmentTap,
   onSegmentDoubleTap,
   onSegmentLongPress,
@@ -33,10 +35,30 @@ export function FractionBar({
   const fraction = barToFraction(bar);
   const label = fractionToString(fraction);
 
+  // Pulse the bar briefly whenever a new segment is added (e.g., a
+  // SPLIT). Compares against the previous render's count and arms a
+  // CSS animation class for 500ms when it grows.
+  const prevCount = useRef(bar.segments.length);
+  const [pulse, setPulse] = useState(false);
+  useEffect(() => {
+    if (bar.segments.length > prevCount.current) {
+      setPulse(true);
+      const t = setTimeout(() => setPulse(false), 500);
+      prevCount.current = bar.segments.length;
+      return () => clearTimeout(t);
+    }
+    prevCount.current = bar.segments.length;
+  }, [bar.segments.length]);
+
   return (
     <div className={styles.row}>
-      <span className={styles.fractionLabel}>{label}</span>
-      <div className={styles.bar}>
+      <span
+        className={styles.fractionLabel}
+        style={showLabel ? undefined : { visibility: "hidden" }}
+      >
+        {label}
+      </span>
+      <div className={`${styles.bar} ${pulse ? styles.barPulse : ""}`}>
         <LayoutGroup id={bar.id}>
           {bar.segments.map((seg, i) => (
             <Segment

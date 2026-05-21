@@ -4,11 +4,17 @@ import { Splash } from "./components/Splash";
 import { getDefaultLesson } from "./tutor/lessons";
 import "./styles/global.css";
 
+const STARTED_KEY = "fraction-tutor:started";
+
 function App() {
   // Mounting LessonShell only after Start is tapped ensures the very
   // first tutor message tries to speak AFTER a user gesture, which
   // is what the browser needs in order to allow audio playback.
-  const [started, setStarted] = useState(false);
+  // We persist `started` to sessionStorage so a Vite dev reload (or
+  // any accidental refresh) doesn't bounce the user back to splash.
+  const [started, setStarted] = useState(
+    () => sessionStorage.getItem(STARTED_KEY) === "1"
+  );
   const manifest = getDefaultLesson();
 
   if (!started) {
@@ -16,7 +22,10 @@ function App() {
       <Splash
         title={manifest.title}
         description={manifest.description}
-        onStart={() => setStarted(true)}
+        onStart={() => {
+          sessionStorage.setItem(STARTED_KEY, "1");
+          setStarted(true);
+        }}
       />
     );
   }

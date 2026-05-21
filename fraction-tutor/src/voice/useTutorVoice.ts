@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { TutorMessage } from "../engine/types";
 import { speak, stop } from "./elevenLabsVoice";
 
@@ -28,7 +28,10 @@ export function useTutorVoice(
     if (muted) stop();
   }, [muted]);
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) so the isSpeaking flip happens
+  // before the browser paints — otherwise the Continue button briefly
+  // shows for one frame on first render before the voice kicks in.
+  useLayoutEffect(() => {
     let latest: TutorMessage | undefined;
     for (let i = messages.length - 1; i >= 0; i--) {
       if (messages[i].sender === "tutor") {
