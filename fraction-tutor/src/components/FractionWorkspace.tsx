@@ -7,7 +7,14 @@ import type {
 } from "../engine/types";
 import styles from "../styles/FractionWorkspace.module.css";
 
-const DOUBLE_CLICK_MS = 320;
+// Matches the OS-default mouse double-click delay (≈500ms on macOS
+// and Windows). Earlier it was 320ms, which silently dropped any
+// mouse double-click slower than that.
+const DOUBLE_CLICK_MS = 500;
+// After we fire onEmptyDoubleTap, suppress duplicate fires for a
+// brief window — both onClick-timestamp logic and the native
+// onDoubleClick handler can race for the same gesture on mouse.
+const DEDUPE_MS = 250;
 
 type FractionWorkspaceProps = {
   bars: FractionBarType[];
@@ -46,22 +53,46 @@ export function FractionWorkspace({
 }: FractionWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const lastClickTime = useRef(0);
+  const lastFiredAt = useRef(0);
 
-  // Detect a double-click on empty workspace area (not on any segment).
-  // Tracks two quick taps via timestamps so it works for both mouse
-  // and touch.
+  const isOnSegmentOrCircle = (target: EventTarget) => {
+    const el = target as HTMLElement;
+    return Boolean(
+      el.closest("[data-segment-id]") || el.closest("svg")
+    );
+  };
+
+  const fireEmptyTap = () => {
+    const now = Date.now();
+    if (now - lastFiredAt.current < DEDUPE_MS) return;
+    lastFiredAt.current = now;
+    onEmptyDoubleTap();
+  };
+
+  // Two paths feed into fireEmptyTap so we catch both mouse and touch:
+  //   - onDoubleClick: browser-native, fires on real mouse double-clicks
+  //     regardless of timing.
+  //   - onClick timestamp: needed for touch, where dblclick is typically
+  //     not synthesized.
+  // The DEDUPE_MS guard above stops a single mouse double-click from
+  // firing twice when both paths see it.
   const handleWorkspaceClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest("[data-segment-id]")) {
+    if (isOnSegmentOrCircle(e.target)) {
       lastClickTime.current = 0;
       return;
     }
     const now = Date.now();
     if (now - lastClickTime.current < DOUBLE_CLICK_MS) {
       lastClickTime.current = 0;
-      onEmptyDoubleTap();
+      fireEmptyTap();
     } else {
       lastClickTime.current = now;
     }
+  };
+
+  const handleWorkspaceDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isOnSegmentOrCircle(e.target)) return;
+    fireEmptyTap();
   };
 
   return (
@@ -69,6 +100,7 @@ export function FractionWorkspace({
       ref={workspaceRef}
       className={styles.workspace}
       onClick={handleWorkspaceClick}
+      onDoubleClick={handleWorkspaceDoubleClick}
     >
       {bars.map((bar) => (
         <FractionBar
