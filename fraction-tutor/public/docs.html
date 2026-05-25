@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fraction Equivalence Tutor — Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --ink: #1b1d24;
+    --muted: #5b6172;
+    --rule: #e7e3d8;
+    --accent: #6a5acd;
+    --accent-soft: #efebff;
+    --code-bg: #f3f0e7;
+    --teal: #2ec4b6;
+    --coral: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 64px 24px 96px;
+  }
+  header.hero {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 32px;
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent);
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-size: 40px;
+    line-height: 1.1;
+    margin: 0 0 16px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  h2 {
+    font-size: 24px;
+    margin: 48px 0 12px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    border-top: 1px solid var(--rule);
+    padding-top: 32px;
+  }
+  h3 {
+    font-size: 17px;
+    margin: 28px 0 8px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  p, li { font-size: 16px; color: var(--ink); }
+  .lede { font-size: 18px; color: var(--muted); max-width: 64ch; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: var(--accent); }
+  code, pre {
+    font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+    font-size: 13.5px;
+  }
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 14px 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  pre code { background: transparent; padding: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 15px;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    font-weight: 700;
+    color: var(--muted);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 4px; }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 18px 0 4px;
+  }
+  .pill {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .callout {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 15px;
+  }
+  .toc {
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin: 24px 0 0;
+    font-size: 15px;
+  }
+  .toc h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 800; }
+  .toc ol { margin: 0; }
+  .ascii {
+    background: var(--code-bg);
+    padding: 14px 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre;
+  }
+  footer {
+    border-top: 1px solid var(--rule);
+    margin-top: 64px;
+    padding-top: 24px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">Documentation</p>
+  <h1>Fraction Equivalence Tutor</h1>
+  <p class="lede">
+    A web app that teaches 9-year-olds fraction equivalence through interactive bars and circles, guided by Lila — a scripted voice tutor. Students split, shade, smash, and compare shapes; when two colored regions line up, the equivalence is visible.
+  </p>
+  <div class="pills">
+    <span class="pill">React 19</span>
+    <span class="pill">TypeScript</span>
+    <span class="pill">Vite</span>
+    <span class="pill">framer-motion</span>
+    <span class="pill">ElevenLabs TTS</span>
+    <span class="pill">Cloudflare Pages</span>
+    <span class="pill">Cloudflare Workers</span>
+  </div>
+  <p style="margin-top:18px;">
+    <strong>Live:</strong> <a href="https://fraction-tutor-1l1.pages.dev">fraction-tutor-1l1.pages.dev</a>
+  </p>
+
+  <div class="toc">
+    <h4>Contents</h4>
+    <ol>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#lesson">Lesson structure</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#stack">Tech stack</a></li>
+      <li><a href="#run">Running locally</a></li>
+      <li><a href="#deploy">Deployment</a></li>
+    </ol>
+  </div>
+</header>
+
+<h2 id="how">How it works</h2>
+<p>
+  The app presents fraction bars (and later, pie-style circles). Gestures drive everything — there is no toolbar. A scripted tutor watches the student's actions and responds at key moments: when the colored portions of two bars match, when an answer reveals a specific misconception, when the playground screen is cleared. Every line of dialogue lives in <code>equivalence.json</code>; there is no LLM in the runtime path.
+</p>
+
+<table>
+  <thead><tr><th>Gesture</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td>Tap a piece</td><td>Color it / un-color it</td></tr>
+    <tr><td>Double-tap a piece</td><td>Split it into two halves</td></tr>
+    <tr><td>Long-press a piece</td><td>Smash the whole bar / circle (playground only)</td></tr>
+    <tr><td>Drag onto neighbor</td><td>Combine adjacent same-colored pieces</td></tr>
+    <tr><td>Double-tap empty space</td><td>Add a new bar (or circle, when asked)</td></tr>
+  </tbody>
+</table>
+
+<h2 id="lesson">Lesson structure</h2>
+<p>The lesson is an 8-step progression authored as a graph of JSON nodes:</p>
+<ol>
+  <li><strong>Hook</strong> — 1/2 and 2/4 side by side: what do you notice?</li>
+  <li><strong>Color and cut</strong> — color a 1/1 bar, watch it cut into 2 equal pieces.</li>
+  <li><strong>First equivalence</strong> — cut a second bar into 4 and color 2; see 1/2 = 2/4.</li>
+  <li><strong>Second equivalence</strong> — build any equivalent of 2/3 (4/6, 6/9, …).</li>
+  <li><strong>Non-example</strong> — 1/2 vs 1/3: the regions don't line up.</li>
+  <li><strong>Circles</strong> — restate the same lessons with pie-style circles.</li>
+  <li><strong>Playground</strong> — add bars and circles, build equivalents, smash the screen clear.</li>
+  <li><strong>Done!</strong></li>
+</ol>
+
+<h3>Node types</h3>
+<ul>
+  <li><strong>message</strong> — tutor speaks; student taps Continue to advance. May carry a <code>setup</code> that configures bars/circles.</li>
+  <li><strong>prompt</strong> — 2–3 tappable options; correct answer is shuffled, "I'm not sure" stays pinned.</li>
+  <li><strong>wait_for_action</strong> — advances when the manipulative state matches a condition. A scripted hint appears after a configurable timeout.</li>
+  <li><strong>check</strong> — assessment branch (same shape as prompt).</li>
+</ul>
+
+<h3>Conditions</h3>
+<ul>
+  <li><code>fraction_equals</code> — cross-multiplication match (<code>1/2</code> matches <code>2/4</code>, <code>3/6</code>, …).</li>
+  <li><code>fraction_exact</code> — literal numerator / denominator pair.</li>
+  <li><code>action_performed</code> — a specific gesture (<code>ADD_BAR</code>, <code>SHADE</code>, <code>SPLIT</code>, …).</li>
+  <li><code>screen_clear</code> — no bars and no circles (playground finale).</li>
+</ul>
+
+<h2 id="architecture">Architecture</h2>
+<p>Four layers. The engine and runner are content-agnostic; lessons are pluggable JSON.</p>
+
+<div class="ascii">┌──────────────────────────────────────────────────────┐
+│                      UI Layer                         │
+│ FractionWorkspace · TutorPanel · ProgressIndicator    │
+│  FractionBar / FractionCircle / Segment · Splash      │
+├──────────────────────┬──────────────┬─────────────────┤
+│  Manipulative Engine │ Tutor Layer  │ Voice Layer     │
+│  (useReducer)        │ (useLessonRunner)│ (useTutorVoice)│
+│                      │              │                 │
+│  - Bars + circles    │ - JSON script│ - Calls proxy   │
+│  - Split, shade,     │ - Step graph │   /tts          │
+│    combine, smash,   │ - Conditions │ - Mute toggle   │
+│    add bar/circle    │ - Hint timers│                 │
+└──────────────────────┴──────┬───────┴────────┬────────┘
+        ▲                     ▼                ▼
+        └── dispatches ───────┴── Worker proxy ┘
+                                   (POST /tts)</div>
+
+<h3>Manipulative engine</h3>
+<p>
+  A <code>useReducer</code> owning two arrays — <code>bars</code> and <code>circles</code>. Bars are ordered segments with a shaded flag and an optional free-movement offset; circles are <code>{slices, shaded}</code>. After every action, <code>normalizeBars</code> packs each bar's shaded count to the left so the visual is always contiguous-from-left, even if a path produced non-contiguous state.
+</p>
+<p>
+  ID counters (<code>makeBarId</code>, <code>makeSegmentId</code>, <code>makeCircleId</code>) are monotonic and <em>not</em> reset between setups — earlier code reset them on <code>SET_STATE</code>, which collided with IDs still in React's reconciliation tree and produced mixed-color, duplicate-numbered segments across setup boundaries.
+</p>
+
+<h3>Tutor runner</h3>
+<p>
+  The runner is a hook (<code>useLessonRunner</code>) that tracks the current node. Two effects watch state: one re-evaluates <code>fraction_equals</code> / <code>fraction_exact</code> / <code>screen_clear</code> on every change to bars/circles; the other handles <code>action_performed</code> via an event channel (<code>notifyAction</code>). Once a condition fires, an <code>isAdvancing</code> lock forces <code>allowedActions</code> to empty for 400–600 ms so celebratory taps can't shade extra pieces during the pause.
+</p>
+<p>
+  Per-node knobs added during UX tuning:
+</p>
+<ul>
+  <li><code>setupDelayMs</code> — defers the <code>setup</code> dispatch by N ms so a cut animation lands during the spoken line, not after. A catch-up runs on early advance.</li>
+  <li><code>setupAfterMessage</code> — defers the <code>setup</code> until voice finishes (with a timeout fallback for muted users).</li>
+  <li><code>allowedActions</code> — explicitly restrict gestures; inferred from the condition by default.</li>
+  <li><code>hideFractionLabels</code> — hides the "X/Y" label so the screen doesn't spoil the answer on the cut quiz.</li>
+</ul>
+
+<h3>Voice</h3>
+<p>
+  <code>elevenLabsVoice.ts</code> calls the Worker's <code>POST /tts</code> instead of ElevenLabs directly — the proxy holds the API key as a Cloudflare secret and streams <code>audio/mpeg</code> back. <code>useTutorVoice.ts</code> watches the latest tutor message, cancels any in-flight playback, and speaks it. It uses <code>useLayoutEffect</code> (not <code>useEffect</code>) so <code>isSpeaking</code> flips to <code>true</code> before paint — eliminating the first-load flash of the Continue button.
+</p>
+<div class="callout">
+  <strong>Fraction pronunciation.</strong> Before each TTS request, <code>toSpokenFractions</code> rewrites every <code>X/Y</code> as <code>"X over Y"</code> (so <code>1/2</code> → "one over two"). The on-screen label stays compact.
+</div>
+<p>
+  The Continue button is hidden until <em>both</em> conditions hold: voice has finished AND at least 1.5 s has passed since the message arrived. The Splash screen captures the first user gesture browsers require before allowing audio playback; <code>sessionStorage</code> persists the started flag so a dev-server reload doesn't bounce the student back.
+</p>
+
+<h3>UI</h3>
+<p>
+  The UI receives state, dispatches gestures, and makes no pedagogical decisions. Empty bars carry a low-alpha tinted border + faint wash so "the blue bar" is recognizable before any pieces are colored. Long-pressing a segment with <code>SMASH</code> allowed triggers a CSS <code>:has([data-holding="true"])</code> selector on the bar wrapper, animating the <em>whole</em> bar in orange so it's clear the whole thing will disappear. All touch targets are at least 48 × 48 px; segments are 100 px tall. Body font is Nunito 400–900.
+</p>
+
+<h3>Data flow</h3>
+<div class="ascii">Student gesture
+  → Segment / Circle / Workspace fires the handler
+  → LessonShell:
+      ├── if node forbids this gesture or isAdvancing → no-op
+      ├── dispatches the reducer action
+      └── calls runner.notifyAction(actionType)
+  → Reducer updates → normalizeBars packs shaded left
+  → Two runner effects react:
+      ├── state change → fraction_* / screen_clear → advance in 600 ms
+      └── notifyAction → action_performed → advance in 400 ms
+  → New tutor message lands in state
+  → useTutorVoice fetches audio and plays it
+  → TutorPanel re-renders; Continue gated on isSpeaking AND 1.5 s hold</div>
+<p>
+  Button taps in the tutor panel (Continue, option) call <code>advance</code> / <code>selectOption</code> directly and bypass the action-notify path.
+</p>
+
+<h2 id="stack">Tech stack</h2>
+<table>
+  <thead><tr><th>Layer</th><th>Choice</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>Language</td><td>TypeScript 6.x</td><td>Type safety for fraction state, lesson schemas, voice contracts.</td></tr>
+    <tr><td>UI</td><td>React 19.x</td><td>Component model, state via <code>useReducer</code> + hooks.</td></tr>
+    <tr><td>Build</td><td>Vite 8.x</td><td>Fast HMR; hashed, tree-shaken production bundles.</td></tr>
+    <tr><td>Gestures</td><td>framer-motion</td><td>Built-in drag with pointer/touch parity; <code>useMotionValue</code> for spring-back on rejected drags; <code>whileTap</code> for instant scale-down. Replaces hand-rolled pointer tracking.</td></tr>
+    <tr><td>Styling</td><td>CSS Modules</td><td>Scoped, zero-runtime, no class collisions. <code>:has()</code> drives the smash-charge bar animation.</td></tr>
+    <tr><td>Font</td><td>Nunito (Google Fonts)</td><td>Rounded geometric sans-serif that reads well for kids and stays legible small.</td></tr>
+    <tr><td>TTS</td><td>ElevenLabs <code>eleven_flash_v2_5</code></td><td>Low-latency synthesis. Key lives in the Worker proxy, never in the client bundle.</td></tr>
+    <tr><td>Proxy</td><td>Cloudflare Workers</td><td>One route, <code>POST /tts</code>. Streams <code>audio/mpeg</code> from ElevenLabs to the browser.</td></tr>
+    <tr><td>Hosting</td><td>Cloudflare Pages</td><td>Single-page app, single CDN edge, same vendor as the proxy.</td></tr>
+  </tbody>
+</table>
+
+<h3>Why not…</h3>
+<table>
+  <thead><tr><th>Alternative</th><th>Reason</th></tr></thead>
+  <tbody>
+    <tr><td>Next.js / Remix</td><td>Single page, single lesson, no routing or SSR needs.</td></tr>
+    <tr><td>Redux / Zustand</td><td>One reducer and one custom hook — <code>useReducer</code> handles it.</td></tr>
+    <tr><td>Canvas for bars</td><td>Bars are axis-aligned rectangles. CSS flexbox renders them with zero hit-detection code.</td></tr>
+    <tr><td>Tailwind</td><td>The manipulative needs precise pixel control over sizing, borders, animation timing.</td></tr>
+    <tr><td>React Native</td><td>One web codebase already deploys to every screen size.</td></tr>
+    <tr><td>LLM tutoring</td><td>The ~100-node script covers the surface deterministically. The earlier Haiku safety net was removed.</td></tr>
+    <tr><td>Firebase / Supabase</td><td>No accounts, no shared data. Progress is browser-local.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="run">Running locally</h2>
+<p><strong>Prerequisites:</strong> Node.js 20+, npm 10+, optionally an ElevenLabs API key (without it, the lesson runs silently but still works).</p>
+
+<pre><code>git clone &lt;repo-url&gt;
+cd clone-synthesis-tutor/fraction-tutor
+
+npm install
+npm run dev</code></pre>
+
+<p>Opens at <code>http://localhost:5173</code>. Create <code>fraction-tutor/.env</code>:</p>
+
+<pre><code>VITE_TUTOR_API_URL=https://fraction-tutor-proxy.heila-shahidi.workers.dev</code></pre>
+
+<p>To run the proxy locally:</p>
+
+<pre><code>cd proxy
+npm install
+echo "ELEVENLABS_API_KEY=sk-..." &gt; .dev.vars
+npx wrangler dev   # http://localhost:8787</code></pre>
+
+<h3>Type-check and build</h3>
+<pre><code>cd fraction-tutor
+npx tsc --noEmit -p tsconfig.app.json
+npm run build</code></pre>
+<p>Vitest and Playwright are planned but not yet scaffolded.</p>
+
+<h2 id="deploy">Deployment</h2>
+<p><strong>Frontend → Cloudflare Pages.</strong></p>
+<pre><code>cd fraction-tutor
+npm run build
+npx wrangler pages deploy dist --project-name=fraction-tutor --commit-dirty=true</code></pre>
+<p>Production URL: <a href="https://fraction-tutor-1l1.pages.dev">fraction-tutor-1l1.pages.dev</a>.</p>
+
+<p><strong>Voice proxy → Cloudflare Workers.</strong></p>
+<pre><code>cd proxy
+npx wrangler secret put ELEVENLABS_API_KEY   # one-time
+npx wrangler deploy</code></pre>
+<p>Proxy URL: <code>https://fraction-tutor-proxy.heila-shahidi.workers.dev</code>. CORS is wildcard for the demo — lock to the Pages origin before any real production use.</p>
+
+<p>Git uses a single <code>origin</code> remote with two push URLs (GitHub + GitLab) so one <code>git push origin main</code> updates both.</p>
+
+<h3>Offline behavior</h3>
+<p>
+  Script and UI logic are bundled and run client-side; the page works offline once cached. The voice layer requires the proxy — without a network, lines aren't spoken but the lesson still progresses normally on Continue / option taps.
+</p>
+
+<footer>
+  Source documentation: <code>README.md</code>, <code>docs/ARCHITECTURE.md</code>, <code>docs/TECH_STACK.md</code>.
+</footer>
+
+</main>
+</body>
+</html>
